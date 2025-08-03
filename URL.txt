@@ -1,0 +1,3 @@
+PROYECTO VACACIONES
+API http://localhost/Vacaciones/test_conexion.php
+SISTEMA http://localhost/Vacaciones/?vista=vacaciones

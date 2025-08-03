@@ -1,0 +1,40 @@
+.pending-requests {
+    margin-top: 30px;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.pending-requests h3 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #1a2a6c;
+}
+
+.requests-list {
+    display: grid;
+    gap: 10px;
+}
+
+.request-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.request-item span {
+    flex: 1;
+    text-align: center;
+}
+
+.status-badge {
+    padding: 3px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
+}
