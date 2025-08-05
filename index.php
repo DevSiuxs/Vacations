@@ -67,7 +67,7 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
     <nav>
         <ul>
             <li>
-                <a href="preisa.com" class="back-btn" onclick="confirmarSalida()">←</a>
+                <a href="#" class="back-btn" onclick="confirmarSalida()">←</a>
             </li>
             <li>
                 <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iNDUiIGZpbGw9IiMxYTJhNmMiLz48cGF0aCBkPSJNMzAgMzVoNDBtLTIwIDIwaDQwbS0yMCAyMGg0MCIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==" alt="Logo Preisa">
@@ -224,7 +224,7 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
             <?php
         }
         
-       function mostrarDisponibilidad() {
+    function mostrarDisponibilidad() {
     global $empleado, $vacaciones, $a_disfrutar, $conn;
     
     // Obtener días en espera (solicitudes pendientes)
@@ -235,7 +235,22 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
         $row = $result->fetch_assoc();
         $dias_en_espera = $row['total'] ?? 0;
     }
+     // Obtener el estado más reciente de las solicitudes
+    $estado_vacaciones = "SOLICITADAS"; // Valor por defecto
+    $tiene_aceptadas = false;
     
+    // Modifica esta consulta para usar la columna correcta (fecha_creacion o la que tengas)
+    $result_estado = $conn->query("SELECT estado FROM solicitudes 
+                                 WHERE id_empleado = {$empleado['id']} 
+                                 ORDER BY id DESC LIMIT 1"); // Ordenamos por ID en lugar de fecha_solicitud
+    if ($result_estado->num_rows > 0) {
+        $row_estado = $result_estado->fetch_assoc();
+        $estado_vacaciones = strtoupper($row_estado['estado']);
+        
+        if ($row_estado['estado'] == 'aprobada') { // Asegúrate que coincide con tu DB
+            $tiene_aceptadas = true;
+        }
+    }
     // Calcular días realmente disponibles (restando los en espera)
     $dias_reales_disponibles = max(0, $a_disfrutar - $dias_en_espera);
     ?>
@@ -276,10 +291,13 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
                 <span class="days"><?php echo $dias_en_espera; ?></span>
             </div>
             <div class="proposition-item highlight">
-                <span class="year">STATUS</span>
-                <span class="days status-badge status-pendiente">SOLICITADAS</span>
+                <span class="days status-badge <?php 
+    echo ($estado_vacaciones == 'APROBADA') ? 'status-aprobado' : 
+         (($estado_vacaciones == 'RECHAZADA') ? 'status-rechazado' : 'status-pendiente'); 
+?>"><?php echo $estado_vacaciones; ?></span>
             </div>
         </div>
+        
         
         <!-- Mostrar solicitudes pendientes -->
         <div class="pending-requests">
@@ -299,7 +317,10 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
                     <?php endwhile; ?>
                 </div>
             <?php else: ?>
-                <p>No tienes solicitudes pendientes de vacaciones</p>
+                <p>No tienes solicitudes pendientes</p>
+                <p>Pero <b>recuerda</b> Si tu status es <b style="color:#6f0;">APROBADA</b> 
+                PORFAVOR acude a RecursosHumanos para que firmes la solicitud de vacaciones. 
+                SI NO FIRMAS TUS VACACIONES EN PAPEL SERAN CANCELADAS EN UNA SEMANA</p>
             <?php endif; ?>
         </div>
         
@@ -377,11 +398,6 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
         return;
     }
     
-    if (dias > 6) {
-        alert("No puedes solicitar más de 6 días en una sola solicitud");
-        return;
-    }
-    
     fetch('guardar_solicitud.php', {
         method: 'POST',
         headers: {
@@ -414,22 +430,28 @@ function aprobarSolicitud(id) {
             },
             body: `id=${id}&accion=aprobar`
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la red');
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.error) {
-                alert("Error: " + data.error);
+                console.error('Error:', data.error);
+                alert("Error al procesar: " + data.error);
             } else {
                 alert(data.success);
-                // Redirigir a disponibilidad para ver los cambios
                 window.location.href = "?vista=disponibilidad";
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert("Error al procesar la solicitud");
+            alert("Error al procesar la solicitud: " + error.message);
         });
     }
 }
+
 // Función para rechazar solicitud
 function rechazarSolicitud(id) {
     if (confirm("¿Estás seguro de rechazar esta solicitud de vacaciones?")) {
@@ -440,19 +462,24 @@ function rechazarSolicitud(id) {
             },
             body: `id=${id}&accion=rechazar`
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la red');
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.error) {
-                alert("Error: " + data.error);
+                console.error('Error:', data.error);
+                alert("Error al procesar: " + data.error);
             } else {
                 alert(data.success);
-                // Recargar la página para actualizar la lista
                 window.location.href = "?vista=disponibilidad";
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert("Error al procesar la solicitud");
+            alert("Error al procesar la solicitud: " + error.message);
         });
     }
 }

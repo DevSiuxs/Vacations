@@ -7,43 +7,56 @@ $username = "root";
 $password = "";
 $dbname = "PreisaVacaciones";
 
-// Crear conexión
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Verificar conexión
-if ($conn->connect_error) {
-    die(json_encode(['error' => "Conexión fallida: " . $conn->connect_error]));
-}
-
-$id_solicitud = $_POST['id'] ?? null;
-$accion = $_POST['accion'] ?? null; // 'aprobar' o 'rechazar'
-
-if (!$id_solicitud || !$accion) {
-    die(json_encode(['error' => 'Datos incompletos']));
-}
-
-// Obtener los datos de la solicitud
-$solicitud = $conn->query("SELECT * FROM solicitudes WHERE id = $id_solicitud")->fetch_assoc();
-
-if (!$solicitud) {
-    die(json_encode(['error' => 'Solicitud no encontrada']));
-}
-
-if ($accion === 'aprobar') {
-    // Actualizar estado de la solicitud
-    $conn->query("UPDATE solicitudes SET estado = 'aprobada' WHERE id = $id_solicitud");
+try {
+    // Crear conexión
+    $conn = new mysqli($servername, $username, $password, $dbname);
     
-    // Actualizar días disfrutados en la tabla vacaciones
-    $conn->query("UPDATE vacaciones 
-                 SET dias_disfrutados = dias_disfrutados + {$solicitud['dias_solicitados']} 
-                 WHERE id_empleado = {$solicitud['id_empleado']}");
-    
-    echo json_encode(['success' => 'Solicitud aprobada y días actualizados']);
-} else {
-    // Solo actualizar estado a rechazada
-    $conn->query("UPDATE solicitudes SET estado = 'rechazada' WHERE id = $id_solicitud");
-    echo json_encode(['success' => 'Solicitud rechazada']);
-}
+    if ($conn->connect_error) {
+        throw new Exception("Conexión fallida: " . $conn->connect_error);
+    }
 
-$conn->close();
+    $id_solicitud = $_POST['id'] ?? null;
+    $accion = $_POST['accion'] ?? null;
+
+    if (!$id_solicitud || !$accion) {
+        throw new Exception('Datos incompletos');
+    }
+
+    // Obtener los datos de la solicitud
+    $result = $conn->query("SELECT * FROM solicitudes WHERE id = $id_solicitud");
+    if (!$result) {
+        throw new Exception("Error en consulta: " . $conn->error);
+    }
+    
+    $solicitud = $result->fetch_assoc();
+    if (!$solicitud) {
+        throw new Exception('Solicitud no encontrada');
+    }
+
+    if ($accion === 'aprobar') {
+        // Actualizar estado de la solicitud
+        if (!$conn->query("UPDATE solicitudes SET estado = 'aprobada', fecha_aprobacion = NOW() WHERE id = $id_solicitud")) {
+            throw new Exception("Error al aprobar: " . $conn->error);
+        }
+        
+        // Actualizar días disfrutados
+        if (!$conn->query("UPDATE vacaciones SET dias_disfrutados = dias_disfrutados + {$solicitud['dias_solicitados']} WHERE id_empleado = {$solicitud['id_empleado']}")) {
+            throw new Exception("Error al actualizar días: " . $conn->error);
+        }
+        
+        echo json_encode(['success' => 'Solicitud aprobada y días actualizados']);
+    } else {
+        // Actualizar estado a rechazada
+        if (!$conn->query("UPDATE solicitudes SET estado = 'rechazada', fecha_aprobacion = NOW() WHERE id = $id_solicitud")) {
+            throw new Exception("Error al rechazar: " . $conn->error);
+        }
+        echo json_encode(['success' => 'Solicitud rechazada']);
+    }
+} catch (Exception $e) {
+    echo json_encode(['error' => $e->getMessage()]);
+} finally {
+    if (isset($conn)) {
+        $conn->close();
+    }
+}
 ?>
