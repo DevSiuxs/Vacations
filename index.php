@@ -142,7 +142,9 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
         }
         
         function mostrarSolicitud() {
-    global $a_disfrutar;
+     global $a_disfrutar;
+    // Calcular fecha mínima (hoy + 15 días)
+    $fechaMinima = date('Y-m-d', strtotime('+15 days'));
     ?>
     <div class="container">
         <h2>SOLICITUD DE VACACIONES</h2>
@@ -150,7 +152,7 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
         <form id="solicitudForm">
             <div class="form-group">
                 <label for="inicio">SOLICITO INICIO DE VACACIONES</label>
-                <input type="date" id="inicio" onchange="calcularDias()">
+                <input type="date" id="inicio" onchange="calcularDias()" min="<?php echo date('Y-m-d', strtotime('+15 days')); ?>">
             </div>
             <div class="form-group">
                 <label for="fin">SOLICITO FIN DE VACACIONES</label>
@@ -167,6 +169,7 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
             </div>
         
             <button type="button" class="submit-btn" onclick="enviarSolicitud()">Enviar Solicitud</button>
+            <a href="?vista=vacaciones" class="solicitar-btn" style="background: #ff0000ff;">Cancelar</a>
         </form>
     </div>
             <?php
@@ -225,7 +228,10 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
         }
         
     function mostrarDisponibilidad() {
-    global $empleado, $vacaciones, $a_disfrutar, $conn;
+    global $empleado, $vacaciones, $conn;
+    
+    // Calcular días teóricos disponibles (sin considerar disfrutados)
+    $dias_teoricos = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'];
     
     // Obtener días en espera (solicitudes pendientes)
     $dias_en_espera = 0;
@@ -235,25 +241,43 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
         $row = $result->fetch_assoc();
         $dias_en_espera = $row['total'] ?? 0;
     }
-     // Obtener el estado más reciente de las solicitudes
-    $estado_vacaciones = "SOLICITADAS"; // Valor por defecto
-    $tiene_aceptadas = false;
     
-    // Modifica esta consulta para usar la columna correcta (fecha_creacion o la que tengas)
+    // Obtener última solicitud aprobada (para mostrar en status)
+    $ultima_aprobada = null;
+    $result_aprobada = $conn->query("SELECT * FROM solicitudes 
+                                   WHERE id_empleado = {$empleado['id']} AND estado = 'aprobada'
+                                   ORDER BY fecha_aprobacion DESC LIMIT 1");
+    if ($result_aprobada->num_rows > 0) {
+        $ultima_aprobada = $result_aprobada->fetch_assoc();
+    }
+    
+    // Obtener el estado más reciente
     $result_estado = $conn->query("SELECT estado FROM solicitudes 
                                  WHERE id_empleado = {$empleado['id']} 
-                                 ORDER BY id DESC LIMIT 1"); // Ordenamos por ID en lugar de fecha_solicitud
+                                 ORDER BY id DESC LIMIT 1");
+    $estado_vacaciones = "SOLICITADAS"; // Valor por defecto
     if ($result_estado->num_rows > 0) {
         $row_estado = $result_estado->fetch_assoc();
         $estado_vacaciones = strtoupper($row_estado['estado']);
-        
-        if ($row_estado['estado'] == 'aprobada') { // Asegúrate que coincide con tu DB
-            $tiene_aceptadas = true;
-        }
     }
-    // Calcular días realmente disponibles (restando los en espera)
-    $dias_reales_disponibles = max(0, $a_disfrutar - $dias_en_espera);
+    
+    // Calcular días realmente disponibles (sin restar aprobadas hasta que llegue la fecha)
+    $dias_reales_disponibles = $dias_teoricos - $dias_en_espera;
+    
+    // Verificar si hay vacaciones aprobadas que ya deberían estar en disfrutados
+    $hoy = new DateTime();
+    $result_por_disfrutar = $conn->query("SELECT SUM(dias_solicitados) as total FROM solicitudes 
+                                        WHERE id_empleado = {$empleado['id']} 
+                                        AND estado = 'aprobada' 
+                                        AND fecha_inicio <= '".$hoy->format('Y-m-d')."'");
+    if ($result_por_disfrutar->num_rows > 0) {
+        $row = $result_por_disfrutar->fetch_assoc();
+        $dias_reales_disponibles -= $row['total'] ?? 0;
+    }
+    
+    $dias_reales_disponibles = max(0, $dias_reales_disponibles);
     ?>
+
     <div class="container">
         <h2>VACACIONES DISPONIBLES</h2>
         
@@ -291,13 +315,20 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
                 <span class="days"><?php echo $dias_en_espera; ?></span>
             </div>
             <div class="proposition-item highlight">
+                <span class="year">STATUS</span>
                 <span class="days status-badge <?php 
-    echo ($estado_vacaciones == 'APROBADA') ? 'status-aprobado' : 
-         (($estado_vacaciones == 'RECHAZADA') ? 'status-rechazado' : 'status-pendiente'); 
-?>"><?php echo $estado_vacaciones; ?></span>
+                    echo ($estado_vacaciones == 'APROBADA') ? 'status-aprobado' : 
+                         (($estado_vacaciones == 'RECHAZADA') ? 'status-rechazado' : 'status-pendiente'); 
+                ?>">
+                    <?php 
+                    echo $estado_vacaciones; 
+                    if ($ultima_aprobada) {
+                        echo " ({$ultima_aprobada['dias_solicitados']} días)";
+                    }
+                    ?>
+                </span>
             </div>
         </div>
-        
         
         <!-- Mostrar solicitudes pendientes -->
         <div class="pending-requests">
@@ -339,39 +370,49 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
          const diasDisponibles = <?php echo $a_disfrutar; ?>;
         // Función para calcular días entre dos fechas
         function calcularDias() {
-            const inicio = document.getElementById('inicio').value;
-            const fin = document.getElementById('fin').value;
-            const disponibles = parseInt(document.getElementById('dias-disponibles').textContent);
-            
-            if (inicio && fin) {
-                const fechaInicio = new Date(inicio);
-                const fechaFin = new Date(fin);
-                
-                // Validar que la fecha fin sea mayor que la inicio
-                if (fechaFin < fechaInicio) {
-                    alert("La fecha de fin debe ser posterior a la de inicio");
-                    document.getElementById('dias').value = 0;
-                    return;
-                }
-                
-                // Calcula la diferencia en milisegundos
-                const diferencia = fechaFin - fechaInicio;
-                
-                // Convierte a días (1000 ms * 60 s * 60 min * 24 h)
-                const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24)) + 1;
-                
-                document.getElementById('dias').value = dias;
-                
-                // Validación visual
-                if (dias > disponibles) {
-                    document.getElementById('dias').style.backgroundColor = '#ffcccc';
-                } else if (dias > 6) {
-                    document.getElementById('dias').style.backgroundColor = '#ffcccc';
-                } else {
-                    document.getElementById('dias').style.backgroundColor = '';
-                }
-            }
+    const inicio = document.getElementById('inicio').value;
+    const fin = document.getElementById('fin').value;
+    const disponibles = parseInt(document.getElementById('dias-disponibles').textContent);
+    
+    if (inicio && fin) {
+        // Validación de 15 días mínimo
+        const hoy = new Date();
+        const fechaInicio = new Date(inicio);
+        const diffTime = fechaInicio - hoy;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays < 15) {
+            alert('La fecha de inicio debe ser al menos 15 días después de hoy');
+            document.getElementById('inicio').value = '';
+            document.getElementById('dias').value = '';
+            return;
         }
+        
+        const fechaFin = new Date(fin);
+        
+        // Validar que la fecha fin sea mayor que la inicio
+        if (fechaFin < fechaInicio) {
+            alert("La fecha de fin debe ser posterior a la de inicio");
+            document.getElementById('dias').value = 0;
+            return;
+        }
+        
+        // Calcula la diferencia en milisegundos
+        const diferencia = fechaFin - fechaInicio;
+        
+        // Convierte a días (1000 ms * 60 s * 60 min * 24 h)
+        const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24)) + 1;
+        
+        document.getElementById('dias').value = dias;
+        
+        // Validación visual
+        if (dias > disponibles) {
+            document.getElementById('dias').style.backgroundColor = '#ffcccc';
+        } else {
+            document.getElementById('dias').style.backgroundColor = '';
+        }
+    }
+}
         
         // Establecer fechas mínimas para los inputs de fecha
         window.onload = function() {

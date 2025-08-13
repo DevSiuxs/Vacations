@@ -34,17 +34,12 @@ try {
     }
 
     if ($accion === 'aprobar') {
-        // Actualizar estado de la solicitud
-        if (!$conn->query("UPDATE solicitudes SET estado = 'aprobada', fecha_aprobacion = NOW() WHERE id = $id_solicitud")) {
-            throw new Exception("Error al aprobar: " . $conn->error);
-        }
-        
-        // Actualizar días disfrutados
-        if (!$conn->query("UPDATE vacaciones SET dias_disfrutados = dias_disfrutados + {$solicitud['dias_solicitados']} WHERE id_empleado = {$solicitud['id_empleado']}")) {
-            throw new Exception("Error al actualizar días: " . $conn->error);
-        }
-        
-        echo json_encode(['success' => 'Solicitud aprobada y días actualizados']);
+    // Actualizar estado de la solicitud (sin tocar días disfrutados)
+    if (!$conn->query("UPDATE solicitudes SET estado = 'aprobada', fecha_aprobacion = NOW() WHERE id = $id_solicitud")) {
+        throw new Exception("Error al aprobar: " . $conn->error);
+    }
+    
+    echo json_encode(['success' => 'Solicitud aprobada']);
     } else {
         // Actualizar estado a rechazada
         if (!$conn->query("UPDATE solicitudes SET estado = 'rechazada', fecha_aprobacion = NOW() WHERE id = $id_solicitud")) {

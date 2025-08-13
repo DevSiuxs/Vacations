@@ -31,6 +31,15 @@ if (!is_numeric($dias) || $dias <= 0) {
     die(json_encode(['error' => 'Número de días no válido']));
 }
 
+// Validar que la fecha de inicio sea al menos 15 días después de hoy
+$hoy = new DateTime();
+$fechaInicioObj = new DateTime($inicio);
+$diferencia = $hoy->diff($fechaInicioObj);
+
+if ($diferencia->days < 15 || $fechaInicioObj <= $hoy) {
+    die(json_encode(['error' => 'La fecha de inicio debe ser al menos 15 días después de hoy']));
+}
+
 // Obtener días disponibles
 $result = $conn->query("SELECT 
     (dias_totales - dias_asignados - dias_disfrutados) as disponibles 
