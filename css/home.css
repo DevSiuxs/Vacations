@@ -1,0 +1,138 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+a{
+    text-decoration: none !important;
+    color: #f0f0f0;
+    transition: 0s;
+}
+
+a:hover{
+    color: #f0f0f0;
+}
+
+html, body {
+    height: 100%;
+    min-height: 100vh;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: 
+        linear-gradient(rgba(4, 5, 9, 0.85), rgba(4, 5, 9, 0.85)),
+        url('../Assets/images/Uranus-Background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    color: #f0f0f0;
+    overflow-x: hidden;
+}
+
+.dashboard {
+    display: grid;
+    grid-template-columns: 250px minmax(350px, 1.5fr) 350px;
+    grid-template-areas: "left center right";
+    gap: 20px;
+    padding: 20px;
+    min-height: 100vh;
+    height: auto; /* Cambiado de 100vh a auto */
+}
+
+.sidebar-left {
+    grid-area: left;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.sidebar-right {
+    grid-area: center;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-height: 100vh;
+    overflow-y: auto;
+}
+
+.main-content {
+    grid-area: right;
+    display: grid;
+    grid-template-rows: repeat(auto-fit, minmax(120px, auto));
+    gap: 20px;
+    max-height: 100vh;
+    overflow-y: auto;
+}
+.sidebar-right, .main-content {
+    overflow: visible; /* Cambiado de auto a visible */
+    height: auto; /* Permitir que crezca con el contenido */
+}
+
+/* Restaurar la imagen de fondo en el logo */
+.logo {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-image: url('../Assets/images/URANUS-LOGO.png');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 150px;
+}
+
+.logo img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Media Queries para responsive */
+@media (max-width: 1200px) {
+    .dashboard {
+        grid-template-columns: 1fr;
+        grid-template-areas: 
+            "left"
+            "center"
+            "right";
+    }
+    
+    .sidebar-left {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .logo, .user-data, .time-card {
+        flex: 1 1 300px;
+        max-width: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard {
+        padding: 10px;
+        gap: 10px;
+    }
+    
+    .logo, .user-data, .time-card {
+        flex: 1 1 calc(50% - 10px);
+        max-width: calc(50% - 10px);
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar-left {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .logo, .user-data, .time-card {
+        flex: 1 1 auto;
+        max-width: 100%;
+    }
+}

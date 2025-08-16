@@ -1,56 +1,101 @@
 <?php
+session_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Debug: Mostrar información de la sesión
+// echo "<pre>Sesión actual: ";
+// print_r($_SESSION);
+// echo "</pre>";
+
+if (!isset($_SESSION['usuario_id'])) {
+    die("Redireccionando a login - Sesión no encontrada. ¿Cookie de sesión existe?");
+}
 // Configuración de la base de datos
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "PreisaVacaciones";
+$dbname = "pruebas";
 
 // Crear conexión
 $conn = new mysqli($servername, $username, $password, $dbname);
+
 
 // Verificar conexión
 if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
 }
+if (!isset($_SESSION['usuario_id'])) {
+    header("Location: /Prueba/login.html");
+    exit();
+}
 
-// Obtener el empleado (usaremos id=1 para pruebas)
-$empleado_id = 1;
+$empleado_id = $_SESSION['usuario_id'];
 
-// Función para obtener datos del empleado
+
+// Usar sentencias preparadas
 function getEmpleado($conn, $id) {
-    $sql = "SELECT * FROM empleados WHERE id = $id";
-    $result = $conn->query($sql);
-    return $result->fetch_assoc();
+    $stmt = $conn->prepare("SELECT * FROM empleados WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_assoc();
 }
-
-// Función para obtener vacaciones del empleado
+ 
+// Función modificada para obtener vacaciones
 function getVacaciones($conn, $id) {
-    $sql = "SELECT * FROM vacaciones WHERE id_empleado = $id";
-    $result = $conn->query($sql);
+    $stmt = $conn->prepare("SELECT * FROM vacaciones WHERE id_empleado = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if($result->num_rows == 0) {
+        return [
+            'dias_totales' => 0,
+            'dias_asignados' => 0,
+            'dias_disfrutados' => 0
+        ];
+    }
+    
     return $result->fetch_assoc();
 }
 
-// Función para obtener solicitudes pendientes
+
 function getSolicitudesPendientes($conn) {
-    $sql = "SELECT s.*, e.nombre 
-            FROM solicitudes s 
-            JOIN empleados e ON s.id_empleado = e.id 
-            WHERE s.estado = 'pendiente'";
-    return $conn->query($sql);
+    // Consulta para obtener todas las solicitudes pendientes con información del empleado
+    $stmt = $conn->prepare("SELECT s.*, e.nombre, e.puesto 
+                          FROM solicitudes s
+                          JOIN empleados e ON s.id_empleado = e.id
+                          WHERE s.estado = 'pendiente'
+                          ORDER BY s.id DESC");
+    $stmt->execute();
+    return $stmt->get_result();
 }
 
-// Obtener datos
+// Obtener datos primero
+
 $empleado = getEmpleado($conn, $empleado_id);
 $vacaciones = getVacaciones($conn, $empleado_id);
-$solicitudes = getSolicitudesPendientes($conn);
+$solicitudes = getSolicitudesPendientes($conn, $empleado_id);  
 
-// Calcular años laborales
+if(!$empleado) {
+    die("Empleado no encontrado en la base de datos");
+}
+$rol = $_SESSION['usuario_rol'] ?? '';
+$esRH = in_array($rol, ['admin', 'editor']);
+
+// Obtener solicitudes según el rol
+$solicitudes = getSolicitudesPendientes($conn, $esRH, $esRH ? null : $empleado_id);
+
+// Luego hacer los cálculos
 $fecha_ingreso = new DateTime($empleado['fecha_ingreso']);
 $hoy = new DateTime();
 $anios_laborales = $fecha_ingreso->diff($hoy)->y;
 
-// Calcular días a disfrutar
-$a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $vacaciones['dias_disfrutados'];
+// Calcular días a disfrutar (una sola vez)
+// En index.php, modifica el cálculo así:
+$a_disfrutar = max(0, ($vacaciones['dias_totales'] ?? 0) - 
+                      ($vacaciones['dias_asignados'] ?? 0) - 
+                      ($vacaciones['dias_disfrutados'] ?? 0));
 ?>
 
 <!DOCTYPE html>
@@ -67,7 +112,7 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
     <nav>
         <ul>
             <li>
-                <a href="#" class="back-btn" onclick="confirmarSalida()">←</a>
+                <a href="../../home.php" class="back-btn" onclick="confirmarSalida()">←</a>
             </li>
             <li>
                 <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgcj0iNDUiIGZpbGw9IiMxYTJhNmMiLz48cGF0aCBkPSJNMzAgMzVoNDBtLTIwIDIwaDQwbS0yMCAyMGg0MCIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==" alt="Logo Preisa">
@@ -81,21 +126,34 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
         $vista = isset($_GET['vista']) ? $_GET['vista'] : 'vacaciones';
         
         switch ($vista) {
-            case 'solicitud':
-                mostrarSolicitud();
-                break;
-            case 'rh_periodos':
-                mostrarRHPeriodos();
-                break;
-            case 'disponibilidad':
-                mostrarDisponibilidad();
-                break;
-            default:
-                mostrarVacaciones();
+    case 'solicitud':
+        mostrarSolicitud();
+        break;
+    case 'rh_periodos':
+        // Solo permitir acceso a admin y editor
+        if (!in_array($_SESSION['usuario_rol'] ?? '', ['admin', 'editor'])) {
+            header("Location: ?vista=vacaciones");
+            exit();
         }
+        mostrarRHPeriodos();
+        break;
+    case 'disponibilidad':
+        mostrarDisponibilidad();
+        break;
+    default:
+        mostrarVacaciones();
+}
         
         function mostrarVacaciones() {
             global $empleado, $vacaciones, $anios_laborales, $a_disfrutar;
+            // Asegurar que los valores existan
+    $vacaciones = array_merge([
+        'dias_totales' => 0,
+        'dias_asignados' => 0,
+        'dias_disfrutados' => 0
+    ], $vacaciones ?? []);
+    
+    $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $vacaciones['dias_disfrutados'];
             ?>
             <div class="container">
                 <h1><?php echo $empleado['nombre']; ?></h1>
@@ -137,6 +195,7 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
                 <a href="?vista=solicitud" class="solicitar-btn">Solicitar Vacaciones</a>
                 <a href="?vista=disponibilidad" class="solicitar-btn" style="background: linear-gradient(to right, #8e2de2, #4a00e0);">Ver Disponibilidad</a>
                 <a href="?vista=rh_periodos" class="solicitar-btn" style="background: #ff0000ff;">RH</a>
+                <a href="admin_vacaciones.php" class="solicitar-btn" style="background: #0a9;">actualizar</a>
             </div>
             <?php
         }
@@ -176,56 +235,59 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
         }
         
         function mostrarRHPeriodos() {
-            global $solicitudes;
-            ?>
-            <div class="container">
-                <h1>PERIODOS DE VACACIONES</h1>
-                
-                <?php if ($solicitudes->num_rows > 0): ?>
-                    <?php while($solicitud = $solicitudes->fetch_assoc()): ?>
-                        <div class="employee-periods">
-                            <div class="employee-header">
-                                <span><?php echo $solicitud['nombre']; ?></span>
-                            </div>
-                            <div class="period-info">
-                                <div class="info-item">
-                                    <span class="label">Periodo</span>
-                                    <span class="value"><?php echo date('d M', strtotime($solicitud['fecha_inicio'])); ?> al <?php echo date('d M', strtotime($solicitud['fecha_fin'])); ?></span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">Días</span>
-                                    <span class="value"><?php echo $solicitud['dias_solicitados']; ?></span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">Cubre</span>
-                                    <span class="value">Rocio Perez</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">Status</span>
-                                    <span class="status-badge status-pendiente">PENDIENTE</span>
-                                </div>
-                            </div>
-                            
-                            <div class="actions">
-                                <button class="action-btn accept-btn" onclick="aprobarSolicitud(<?php echo $solicitud['id']; ?>)">
-                                    <i>✓</i> Aceptar
-                                </button>
-                                <button class="action-btn cancel-btn" onclick="rechazarSolicitud(<?php echo $solicitud['id']; ?>)">
-                                    <i>✕</i> Cancelar
-                                </button>
-                            </div>
-                        </div>
-                    <?php endwhile; ?>
-                <?php else: ?>
-                    <div class="info-item" style="text-align: center; padding: 40px;">
-                        <p style="font-size: 18px;">No hay solicitudes pendientes</p>
+    global $conn;
+    
+    // Obtener todas las solicitudes pendientes
+    $solicitudes = getSolicitudesPendientes($conn);
+    ?>
+    <div class="container">
+        <h1>PERIODOS DE VACACIONES</h1>
+        
+        <?php if ($solicitudes->num_rows > 0): ?>
+            <?php while($solicitud = $solicitudes->fetch_assoc()): ?>
+                <div class="employee-periods">
+                    <div class="employee-header">
+                        <span><?php echo htmlspecialchars($solicitud['nombre'] ?? 'Nombre no disponible'); ?></span>
+                        <span class="employee-puesto"><?php echo htmlspecialchars($solicitud['puesto'] ?? ''); ?></span>
                     </div>
-                <?php endif; ?>
-                
-                <a href="?vista=disponibilidad" class="next-btn">Siguiente</a>
+                    <div class="period-info">
+                        <div class="info-item">
+                            <span class="label">Periodo</span>
+                            <span class="value">
+                                <?php echo date('d M Y', strtotime($solicitud['fecha_inicio'])); ?> 
+                                al <?php echo date('d M Y', strtotime($solicitud['fecha_fin'])); ?>
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Días</span>
+                            <span class="value"><?php echo $solicitud['dias_solicitados']; ?></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Status</span>
+                            <span class="status-badge status-pendiente">PENDIENTE</span>
+                        </div>
+                    </div>
+                    
+                    <div class="actions">
+                        <button class="action-btn accept-btn" onclick="aprobarSolicitud(<?php echo $solicitud['id']; ?>)">
+                            <i>✓</i> Aprobar
+                        </button>
+                        <button class="action-btn cancel-btn" onclick="rechazarSolicitud(<?php echo $solicitud['id']; ?>)">
+                            <i>✕</i> Rechazar
+                        </button>
+                    </div>
+                </div>
+            <?php endwhile; ?>
+        <?php else: ?>
+            <div class="info-item" style="text-align: center; padding: 40px;">
+                <p style="font-size: 18px;">No hay solicitudes pendientes</p>
             </div>
-            <?php
-        }
+        <?php endif; ?>
+        
+        <a href="?vista=disponibilidad" class="next-btn">Siguiente</a>
+    </div>
+    <?php
+}
         
     function mostrarDisponibilidad() {
     global $empleado, $vacaciones, $conn;
@@ -242,14 +304,15 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
         $dias_en_espera = $row['total'] ?? 0;
     }
     
-    // Obtener última solicitud aprobada (para mostrar en status)
-    $ultima_aprobada = null;
-    $result_aprobada = $conn->query("SELECT * FROM solicitudes 
-                                   WHERE id_empleado = {$empleado['id']} AND estado = 'aprobada'
-                                   ORDER BY fecha_aprobacion DESC LIMIT 1");
-    if ($result_aprobada->num_rows > 0) {
-        $ultima_aprobada = $result_aprobada->fetch_assoc();
-    }
+
+  // Obtener última solicitud (la más reciente sin importar estado)
+$ultima_solicitud = null;
+$result_ultima = $conn->query("SELECT * FROM solicitudes 
+                             WHERE id_empleado = {$empleado['id']}
+                             ORDER BY id DESC LIMIT 1");
+if ($result_ultima->num_rows > 0) {
+    $ultima_solicitud = $result_ultima->fetch_assoc();
+}
     
     // Obtener el estado más reciente
     $result_estado = $conn->query("SELECT estado FROM solicitudes 
@@ -315,19 +378,19 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
                 <span class="days"><?php echo $dias_en_espera; ?></span>
             </div>
             <div class="proposition-item highlight">
-                <span class="year">STATUS</span>
-                <span class="days status-badge <?php 
-                    echo ($estado_vacaciones == 'APROBADA') ? 'status-aprobado' : 
-                         (($estado_vacaciones == 'RECHAZADA') ? 'status-rechazado' : 'status-pendiente'); 
-                ?>">
-                    <?php 
-                    echo $estado_vacaciones; 
-                    if ($ultima_aprobada) {
-                        echo " ({$ultima_aprobada['dias_solicitados']} días)";
-                    }
-                    ?>
-                </span>
-            </div>
+    <span class="year">STATUS</span>
+    <span class="days status-badge <?php 
+        echo ($estado_vacaciones == 'APROBADA') ? 'status-aprobado' : 
+             (($estado_vacaciones == 'RECHAZADA') ? 'status-rechazado' : 'status-pendiente'); 
+    ?>">
+        <?php 
+        echo $estado_vacaciones; 
+        if ($ultima_solicitud) {
+            echo " ({$ultima_solicitud['dias_solicitados']} días)";
+        }
+        ?>
+    </span>
+</div>
         </div>
         
         <!-- Mostrar solicitudes pendientes -->

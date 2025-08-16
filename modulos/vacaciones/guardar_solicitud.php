@@ -1,11 +1,12 @@
 <?php
+session_start();
 header('Content-Type: application/json');
 
 // Configuración de la base de datos
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "PreisaVacaciones";
+$dbname = "pruebas";
 
 // Crear conexión
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -14,12 +15,15 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die(json_encode(['error' => "Conexión fallida: " . $conn->connect_error]));
 }
+if (!isset($_SESSION['usuario_id'])) {
+    die(json_encode(['error' => 'No autorizado']));
+}
 
 // Obtener datos del POST
 $inicio = $_POST['inicio'] ?? null;
 $fin = $_POST['fin'] ?? null;
 $dias = $_POST['dias'] ?? null;
-$id_empleado = 1; // ID de Juan Pérez
+$id_empleado = $_SESSION['usuario_id'] ?? null;
 
 // Validar datos básicos
 if (!$inicio || !$fin || !$dias) {

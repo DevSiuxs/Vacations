@@ -1,0 +1,269 @@
+.sidebar-right {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.menu-section {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.menu-title {
+  color: #4caf50;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.menu-item {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.menu-item-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 1.8s ease;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.menu-item-header:hover {
+  background: rgba(76, 175, 80, 0.2);
+  border-color: rgba(76, 175, 80, 0.3);
+  transform: translateX(3px);
+}
+
+.menu-item.active .menu-item-header {
+  background: rgba(76, 175, 80, 0.3);
+  border-color: rgba(76, 175, 80, 0.5);
+}
+
+.menu-icon {
+  width: 30px;
+  height: 30px;
+  background: #4caf50;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.submenu {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  padding: 0;
+  background: rgba(76, 175, 80, 0.1);
+  border-radius: 8px;
+  margin-top: 8px;
+  border: 1px solid rgba(76, 175, 80, 0.2);
+  transition: all 1.4s ease-in-out;
+}
+
+.menu-item.active .submenu {
+  max-height: 1500px;
+  opacity: 1;
+  padding: 10px;
+}
+
+.menu-item:hover .submenu {
+  max-height: 1200px;
+  opacity: 1;
+  padding: 10px;
+}
+
+.submenu-item {
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 1.8s ease;
+  margin-bottom: 5px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.submenu-item:hover {
+  background: rgba(76, 175, 80, 0.3);
+  color: #ffffff;
+  transform: translateX(8px);
+}
+
+.submenu-item:last-child {
+  margin-bottom: 0;
+}
+
+/* MODIFICACION DEL SUBMENU DEL DEL SUBMENU */
+
+.submenu-item.has-submenu {
+  position: relative;
+}
+
+.nested-submenu {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  padding: 0;
+  background: rgba(76, 175, 80, 0.15);
+  border-radius: 8px;
+  margin: 8px 0;
+  border-left: 2px solid rgba(76, 175, 80, 0.3);
+  transition: all 1.3s;
+}
+
+.submenu-item.has-submenu:hover .nested-submenu {
+  max-height: 500px;
+  opacity: 1;
+  padding: 5px 0 5px 15px;
+}
+
+.submenu-item.has-submenu.active .nested-submenu {
+  max-height: 200px;
+  opacity: 1;
+  padding: 5px 0 5px 15px;
+}
+
+.submenu-item.has-submenu > span {
+  display: block;
+  padding: 10px 15px;
+  border-radius: 6px;
+}
+
+.submenu-item.has-submenu:hover > span {
+  background: rgba(76, 175, 80, 0.3);
+  color: #ffffff;
+}
+
+.card-view-btn {
+  background: #4caf50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.card:hover .card-view-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.card-view-btn:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+}
+
+.tasks-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 15px;
+  padding: 0 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  border: 1px solid rgba(76, 175, 80, 0.2);
+  opacity: 0;
+}
+
+.tasks-content.active {
+  max-height: 400px;
+  opacity: 1;
+  padding: 15px;
+}
+
+.task-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.task-item:last-child {
+  border-bottom: none;
+}
+
+.task-status {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.status-pending {
+  background: #ffc107;
+  color: #000;
+}
+
+.status-completed {
+  background: #4caf50;
+  color: white;
+}
+
+.status-urgent {
+  background: #f44336;
+  color: white;
+}
+
+
+/* Reemplaza la sección de bottom-cards con esto: */
+.bottom-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-top: 20px; /* Espacio después del menú */
+  padding: 15px;
+  background: rgba(4, 5, 9, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative; /* Cambiado de sticky a relative */
+  bottom: auto; /* Eliminamos el posicionamiento fijo */
+}
+
+.bottom-card:hover {
+  background: rgba(0, 255, 8, 0.8);
+  transform: translateY(-3px);
+  border-radius: 25px;
+}
+
+.sidebar-right {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+  position: relative; /* Añade esto */
+  z-index: 1; /* Asegura que esté por encima de otros elementos */
+}
+
+@media (max-width: 1200px) {
+  .bottom-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .bottom-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .bottom-cards {
+    grid-template-columns: 1fr;
+  }
+}

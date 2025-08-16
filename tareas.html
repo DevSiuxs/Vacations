@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tareas</title>
+  <link rel="stylesheet" href="css/tareas.css">
+  <link rel="icon" href="../../Assets/icons/Uranus.ico" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <nav class="custom-nav">
+    <div class="nav-wrapper">
+      <ul class="left-group">
+        <li><a href="./home.html"><i class="material-icons">home</i></a></li>
+        <li><p class="text_name">Juan Jaime</p><b class="text_info">Admin</b></li>
+      </ul>
+      <ul class="right-group">
+        <li><a href="#"><i class="material-icons">notifications</i></a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+    <h1>Asignación de Modulos</h1>
+
+    <!-- Cambiar el formulario de búsqueda -->
+ <div class="user-search-container">
+    <label for="user-search">Asignar a:</label>
+    <select id="user-search" name="usuario">
+      <option value="">Cargando empleados...</option>
+    </select>
+    <button id="save-tasks" class="save-button">Guardar Tareas</button>
+  </div>
+
+    
+    <!-- Módulo ADMINISTRACIÓN -->
+<section>
+  <h2>ADMINISTRACIÓN</h2>
+  <details>
+    <summary><input type="checkbox"> Recursos Humanos</summary>
+    <label><input type="checkbox" name="tarea_Recursos Humanos|Reclutamiento y seleccion"> Reclutamiento y seleccion</label>
+    <label><input type="checkbox" name="tarea_Recursos Humanos|Vacaciones"> Vacaciones</label>
+    <label><input type="checkbox" name="tarea_Recursos Humanos|Expedientes"> Expedientes</label>
+    <label><input type="checkbox" name="tarea_Recursos Humanos|Planificacion de Eventos"> Planificacion de Eventos</label>
+  </details>
+  
+  <details>
+    <summary><input type="checkbox"> Tecnologia</summary>
+    <label><input type="checkbox" name="tarea_Tecnologia|Funeraria"> Funeraria</label>
+    <label><input type="checkbox" name="tarea_Tecnologia|Desararrollo/IA"> Desararrollo/IA</label>
+    <label><input type="checkbox" name="tarea_Tecnologia|Soporte"> Soporte</label>
+  </details>
+  
+  <details>
+    <summary><input type="checkbox"> Juridico</summary>
+    <label><input type="checkbox" name="tarea_Juridico|Horno"> Horno</label>
+    <label><input type="checkbox" name="tarea_Juridico|Representac"> Representac</label>
+    <label><input type="checkbox" name="tarea_Juridico|Documentos Legales"> Documentos Legales</label>
+  </details>
+  
+  <details>
+    <summary><input type="checkbox"> Finanzas</summary>
+    <label><input type="checkbox" name="tarea_Finanzas|Compras"> Compras</label>
+    <label><input type="checkbox" name="tarea_Finanzas|Fondeois"> Fondeois</label>
+    <label><input type="checkbox" name="tarea_Finanzas|P. Prov Gastos"> P. Prov Gastos</label>
+  </details>
+</section>
+    <!-- Módulo OPERACIÓN -->
+    <section>
+      <h2>OPERACIÓN</h2>
+      <details>
+        <summary><input type="checkbox"> FU</summary>
+        <label><input type="checkbox"> PPTO</label>
+        <label><input type="checkbox"> DOCUM</label>
+        <label><input type="checkbox"> PRECIOS</label>
+        <label><input type="checkbox"> SUBIR SF</label>
+        <label><input type="checkbox"> SEMAFOROS</label>
+      </details>
+      <details>
+        <summary><input type="checkbox"> UVAF</summary>
+        <label><input type="checkbox"> PPTO</label>
+        <label><input type="checkbox"> DOCUM</label>
+        <label><input type="checkbox"> PRECIOS</label>
+        <label><input type="checkbox"> SUBIR SF</label>
+        <label><input type="checkbox"> SEMAFOROS</label>
+      </details>
+      <details>
+        <summary><input type="checkbox"> ETHERNUS</summary>
+        <label><input type="checkbox"> PPTO</label>
+        <label><input type="checkbox"> DOCUM</label>
+        <label><input type="checkbox"> PRECIOS</label>
+        <label><input type="checkbox"> SUBIR SF</label>
+        <label><input type="checkbox"> SEMAFOROS</label>
+      </details>
+        <details>
+          <summary><input type="checkbox"> Terceros</summary>
+          <label><input type="checkbox"> CDMS</label>
+          <label><input type="checkbox"> B2</label>
+          <label><input type="checkbox"> FLORES</label>
+        </details>
+      <details>
+        <summary><input type="checkbox"> PROCESOS</summary>
+        <!-- Añade tareas si hay -->
+      </details>
+    </section>
+
+    <!-- Módulo VENTAS (Nuevo) -->
+    <section>
+      <h2>VENTAS</h2>
+      <details>
+        <summary><input type="checkbox"> Documentos</summary>
+        <label><input type="checkbox"> SOL V&F</label>
+        <label><input type="checkbox"> Contratos SAF&PA</label>
+        <label><input type="checkbox"> Cotizaciones</label>
+      </details>
+      <details>
+        <summary><input type="checkbox"> Lista de Precios</summary>
+        <!-- Tareas específicas si las hay -->
+      </details>
+      <details>
+        <summary><input type="checkbox"> Convenios</summary>
+        <label><input type="checkbox"> Anemex</label>
+        <label><input type="checkbox"> Plenitud</label>
+        <label><input type="checkbox"> Madres</label>
+        <label><input type="checkbox"> Sabritas</label>
+      </details>
+      <details>
+        <summary><input type="checkbox"> Expediente</summary>
+        <label><input type="checkbox"> Datos</label>
+        <label><input type="checkbox"> Estado de cuenta</label>
+        <label><input type="checkbox"> SF PROP</label>
+      </details>
+      <details>
+        <summary><input type="checkbox"> APV</summary>
+        <label><input type="checkbox"> DATOS</label>
+        <label><input type="checkbox"> Contratos</label>
+        <label><input type="checkbox"> Comisiones</label>
+      </details>
+    </section>
+
+    <!-- Módulo COBRANZA (Nuevo) -->
+    <section>
+      <h2>COBRANZA</h2>
+      <details>
+        <summary><input type="checkbox"> Agenda</summary>
+        <!-- Tareas específicas si las hay -->
+      </details>
+      <details>
+        <summary><input type="checkbox"> Cobrar</summary>
+        <!-- Tareas específicas si las hay -->
+      </details>
+      <details>
+        <summary><input type="checkbox"> Semáforo</summary>
+        <!-- Tareas específicas si las hay -->
+      </details>
+      <details>
+        <summary><input type="checkbox"> S. Pagos</summary>
+        <!-- Tareas específicas si las hay -->
+      </details>
+      <details>
+        <summary><input type="checkbox"> Auditoría</summary>
+        <!-- Tareas específicas si las hay -->
+      </details>
+    </section>
+
+    <!-- Módulo CLIENTES -->
+    <section>
+      <h2>CLIENTES</h2>
+      <details>
+        <summary><input type="checkbox"> TEC.FUN</summary>
+        <label><input type="checkbox"> OBITUR</label>
+        <label><input type="checkbox"> Línea de Tiempo</label>
+        <label><input type="checkbox"> Libro de condolencias</label>
+      </details>
+      <details>
+        <summary><input type="checkbox"> Estado de cuentas</summary>
+        <label><input type="checkbox"> Pago</label>
+        <label><input type="checkbox"> Estado de cuenta</label>
+      </details>
+      <details>
+        <summary><input type="checkbox"> Documentos</summary>
+        <label><input type="checkbox"> Contratos</label>
+        <label><input type="checkbox"> Documentos SF</label>
+      </details>
+      <details>
+        <summary><input type="checkbox"> Solicita SF</summary>
+        <!-- Tareas específicas si las hay -->
+      </details>
+      <details>
+        <summary><input type="checkbox"> Compras</summary>
+        <label><input type="checkbox"> Cafetería</label>
+        <label><input type="checkbox"> Florería</label>
+        <label><input type="checkbox"> Mejoras</label>
+      </details>
+    </section>
+
+    <!-- Módulo MANTENIMIENTO (Nuevo) -->
+    <section>
+      <h2>MANTENIMIENTO</h2>
+      <details>
+        <summary><input type="checkbox"> Vehículos</summary>
+        <!-- Tareas específicas si las hay -->
+      </details>
+      <details>
+        <summary><input type="checkbox"> Instalaciones</summary>
+        <!-- Tareas específicas si las hay -->
+      </details>
+      <details>
+        <summary><input type="checkbox"> Almacén</summary>
+        <!-- Tareas específicas si las hay -->
+      </details>
+    </section>
+
+    <!-- Módulo MANUFACTURA (Nuevo) -->
+    <section>
+      <h2>MANUFACTURA</h2>
+      <details>
+        <summary><input type="checkbox"> Cafetería</summary>
+        <!-- Tareas específicas si las hay -->
+      </details>
+      <details>
+        <summary><input type="checkbox"> Florería</summary>
+        <!-- Tareas específicas si las hay -->
+      </details>
+      <details>
+        <summary><input type="checkbox"> Comedor</summary>
+        <!-- Tareas específicas si las hay -->
+      </details>
+    </section>
+
+    <section>
+      <h2>MODULOS SATELITALES</h2>
+      <details>
+        <summary><input type="checkbox"> Mando Ceo</summary>
+        <!-- Tareas específicas si las hay -->
+      </details>
+      <details>
+        <summary><input type="checkbox"> Notificaciones</summary>
+        <!-- Tareas específicas si las hay -->
+      </details>
+      <details>
+        <summary><input type="checkbox"> Capacitacion</summary>
+        <!-- Tareas específicas si las hay -->
+      </details>
+      <details>
+        <summary><input type="checkbox"> Firma Digital</summary>
+        <!-- Tareas específicas si las hay -->
+      </details>
+      <details>
+        <summary><input type="checkbox"> Mensajeria y Eventos</summary>
+        <!-- Tareas específicas si las hay -->
+      </details>
+      <details>
+        <summary><input type="checkbox"> Tareas y Reportes</summary>
+        <!-- Tareas específicas si las hay -->
+      </details>
+      <details>
+        <summary><input type="checkbox"> Reportes y dashboards</summary>
+        <!-- Tareas específicas si las hay -->
+      </details>
+      <details>
+        <summary><input type="checkbox"> Soporte Tecnico</summary>
+        <!-- Tareas específicas si las hay -->
+      </details>
+    </section>
+  </main>
+
+  <!-- Cambia la acción del formulario -->
+<script>
+// Función mejorada para cargar empleados
+async function cargarEmpleados() {
+  try {
+    const select = document.getElementById('user-search');
+    
+    // Primero prueba con rutas relativas desde tareas.html
+    const response = await fetch('../../php/empleados.php');
+    
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+    
+    const empleados = await response.json();
+    
+    // Limpiar y poblar el select
+    select.innerHTML = '';
+    empleados.forEach(empleado => {
+      const option = document.createElement('option');
+      option.value = empleado.id;
+      option.textContent = empleado.nombre;
+      select.appendChild(option);
+    });
+    
+  } catch (error) {
+    console.error('Error al cargar empleados:', error);
+    const select = document.getElementById('user-search');
+    select.innerHTML = '<option value="">Error al cargar empleados</option>';
+  }
+}
+
+// Llamar al cargar la página
+document.addEventListener('DOMContentLoaded', cargarEmpleados);
+</script>
+</body>
+</html>

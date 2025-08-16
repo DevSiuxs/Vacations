@@ -1,0 +1,214 @@
+
+
+        /* Columna 1 - Sidebar izquierda */
+        .sidebar-left {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 250px; /* Ancho mínimo */
+    padding: 15px;
+}
+
+
+        .logo {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .centered-img {
+         width: 10rem;
+        }
+
+        .logo h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #8aff00;
+            text-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+        }
+
+        .user-data {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .user-data h3 {
+            margin-bottom: 15px;
+            color: #8aff00;
+        }
+
+        .status-indicators {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .status-dot.green { background: #4CAF50; }
+        .status-dot.yellow { background: #FFF702; }
+        .status-dot.red { background: #F44336; }
+        .status-dot.blue { background: #02ABFF; }
+        .status-dot.orange { background: #FFBC02; }
+
+        .time-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .time-card h3 {
+            margin-bottom: 15px;
+            color: #4CAF50;
+        }
+
+        .time-display {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+
+        .btn-view {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-view:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+
+        /* Cerrar sesion */
+        .logout {
+    margin-top: auto;
+    padding: 20px;
+    text-align: center;
+}
+
+.logout-button {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.logout-button img {
+    width: 24px;
+    height: 24px;
+    margin-top: 8px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.logout-button:hover {
+    background-color: #F44336;
+    transform: scale(1.1);
+}
+
+.logout-button:hover::after {
+    content: "Cerrar sesión";
+    position: absolute;
+    top: 45px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    padding: 5px 10px;
+    font-size: 0.75rem;
+    border-radius: 5px;
+    white-space: nowrap;
+    z-index: 10;
+}
+/* Modificaciones para left.css */
+@media (max-width: 1200px) {
+    .sidebar-left {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        max-width: 100%;
+        gap: 15px;
+        padding: 15px;
+    }
+    
+    .logo, .user-data, .time-card {
+        flex: 1 1 300px;
+        max-width: 300px;
+        margin: 0;
+    }
+    
+    .logout {
+        margin-top: 0;
+        width: 100%;
+        order: 4; /* Mover el logout al final */
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar-left {
+        flex-direction: row;
+        gap: 10px;
+        padding: 10px;
+    }
+    
+    .logo, .user-data, .time-card {
+        flex: 1 1 calc(50% - 20px);
+        max-width: calc(50% - 20px);
+        min-width: 200px;
+    }
+    
+    .centered-img {
+        width: 8rem;
+    }
+    
+    .btn-view {
+        padding: 8px 15px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar-left {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .logo, .user-data, .time-card {
+        flex: 1 1 auto;
+        width: 100%;
+        max-width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .logout {
+        order: unset;
+        margin-top: 10px;
+    }
+    
+    .centered-img {
+        width: 7rem;
+    }
+}
