@@ -1,0 +1,76 @@
+.pending-requests {
+    margin-top: 30px;
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.pending-requests h3 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #1a2a6c;
+}
+
+.requests-list {
+    display: grid;
+    gap: 10px;
+}
+
+.request-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.request-item span {
+    flex: 1;
+    text-align: center;
+}
+
+.status-badge {
+    padding: 3px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
+}
+/* estilos para status rechazados pendientes y aprobados */
+.status-aprobado{
+    background-color: #4CAF50;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+.status-rechazado {
+    background-color: #f44336;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+.status-pendiente {
+    background-color: #FFA500;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+.alert-aceptado {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #c3e6cb;
+    border-radius: 4px;
+    text-align: center;
+    font-weight: bold;
+}
+.green{
+    color: #62ff00;
+    font-size: 10px;
+}

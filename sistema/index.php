@@ -73,9 +73,11 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Vacaciones - Preisa</title>
-    <link rel="stylesheet" href="vacaciones.css">
-    <link rel="stylesheet" href="pending.css">
-    <link rel="stylesheet" href="vacaciones.css">
+    <link rel="stylesheet" href="../css/vacaciones.css">
+    <link rel="stylesheet" href="../css/pending.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
 </head>
 <body>
      <nav>
@@ -87,7 +89,7 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
                 </li>
             </li>
             <li style="margin-left: auto;">
-                <a href="../logout.php" style="color: white; margin-left: 15px; text-decoration:none;"><img src="../Assets/icons/power-icon.webp" alt="Cerrar Sesion"></a>
+                <a href="../logout.php" style="margin-left:15px; text-decoration:none; font-size:24px; color:red; title:cerrar sesion;"><i class="fas fa-power-off"></i></a>
             </li>
         </ul>
     </nav>
@@ -144,8 +146,7 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
                     </div>
                     <div class="stat-box">
                         <span class="stat-number"><?php echo $vacaciones['dias_asignados']; ?></span>
-                        <!-- <span class="stat-label">ASIGNADOS</span> -->
-                         <a href="../table_vacaciones/tabla.html"><span class="stat-label">ASIGNADOS</span></a>
+                         <a href="../table_vacaciones/tabla.php"><span class="stat-label asg">ASIGNADOS</span></a>
                     </div>
                     <div class="stat-box">
                         <span class="stat-number"><?php echo $vacaciones['dias_disfrutados']; ?></span>
