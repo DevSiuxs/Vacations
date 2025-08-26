@@ -6,7 +6,7 @@
         }
         
         body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            background: linear-gradient(135deg, #1a2a6c, #a92222, #fdbb2d);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -14,7 +14,7 @@
         }
         
         nav {
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color:#f2f2f280;
             padding: 15px 20px;
             display: flex;
             justify-content: space-between;
@@ -32,8 +32,8 @@
         
         nav img {
             height: 50px;
-            border-radius: 50%;
-            border: 2px solid #fff;
+            border-radius: 25%;
+            border: 1px solid #fff;
         }
         
         .back-btn {
@@ -99,6 +99,7 @@
         
         .info-item:hover {
             transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(77, 255, 0, 0.8);
         }
         
         .label {
@@ -173,7 +174,7 @@
         
         .solicitar-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(0, 176, 155, 0.6);
+            box-shadow: 0 6px 20px rgba(2, 255, 36, 0.6);
         }
         
         .submit-btn {
