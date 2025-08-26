@@ -75,6 +75,8 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
     <title>Sistema de Vacaciones - Preisa</title>
     <link rel="stylesheet" href="../css/vacaciones.css">
     <link rel="stylesheet" href="../css/pending.css">
+    <!-- ver_dias_ocupados -->
+     <link rel="stylesheet" href="../css/ver_dias_ocupados.css">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
@@ -169,60 +171,228 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
             <?php
         }
         
-        function mostrarSolicitud() {
-            global $a_disfrutar, $conn;
-            $id_empleado = $_SESSION['empleado_id']; // Usar el ID de la sesión
-            
-            // Calcular fecha mínima (hoy + 15 días)
-            $fechaMinima = date('Y-m-d', strtotime('+15 days'));
-            
-            // Obtener fechas bloqueadas (aprobadas) para este empleado
-            $result = $conn->query("SELECT fecha_inicio, fecha_fin 
-                               FROM solicitudes 
-                               WHERE id_empleado = $id_empleado 
-                               AND (estado = 'aprobada' OR estado = 'pendiente')");
-            
-            $fechasBloqueadas = [];
-            while ($row = $result->fetch_assoc()) {
-                $fechasBloqueadas[] = [
-                    'start' => $row['fecha_inicio'],
-                    'end' => $row['fecha_fin']
-                ];
-            }
-            
-            // Convertir a JSON para usar en JavaScript
-            $fechasBloqueadasJson = json_encode($fechasBloqueadas);
-            ?>
-            <div class="container">
-                <h2>SOLICITUD DE VACACIONES</h2>
-                
-                <form id="solicitudForm">
-                    <div class="form-group">
-                        <label for="inicio">SOLICITO INICIO DE VACACIONES</label>
-                        <input type="date" id="inicio" onchange="calcularDias()" min="<?php echo $fechaMinima; ?>">
-                    </div>
-                    <div class="form-group">
-                        <label for="fin">SOLICITO FIN DE VACACIONES</label>
-                        <input type="date" id="fin" onchange="calcularDias()" min="<?php echo $fechaMinima; ?>">
-                    </div>
-                    <div class="form-group">
-                        <label for="dias">DIAS A PEDIR</label>
-                        <input type="number" id="dias" readonly>
-                    </div>
-                    <div class="form-group">
-                        <p style="text-align: center; font-weight: bold;">
-                            Días disponibles: <span id="dias-disponibles"><?php echo $a_disfrutar; ?></span>
-                        </p>
-                    </div>
-                
-                    <button type="button" class="submit-btn" onclick="enviarSolicitud()">Enviar Solicitud</button>
-                    <a href="?vista=vacaciones" class="solicitar-btn" style="background: #ff0000ff;">Cancelar</a>
-                </form>
+       function mostrarSolicitud() {
+    global $a_disfrutar, $conn;
+    $id_empleado = $_SESSION['empleado_id'];
+    
+    // Calcular fecha mínima (hoy + 15 días)
+    $fechaMinima = date('Y-m-d', strtotime('+15 days'));
+    
+    // Obtener fechas bloqueadas (aprobadas y pendientes) para este empleado
+    $result = $conn->query("SELECT fecha_inicio, fecha_fin 
+                           FROM solicitudes 
+                           WHERE id_empleado = $id_empleado 
+                           AND (estado = 'aprobada' OR estado = 'pendiente')");
+    
+    $fechasBloqueadas = [];
+    while ($row = $result->fetch_assoc()) {
+        $fechasBloqueadas[] = [
+            'start' => $row['fecha_inicio'],
+            'end' => $row['fecha_fin']
+        ];
+    }
+    
+    // Obtener TODAS las fechas ocupadas de TODOS los usuarios (aprobadas y pendientes)
+    $resultOcupadas = $conn->query("SELECT fecha_inicio, fecha_fin 
+                                   FROM solicitudes 
+                                   WHERE (estado = 'aprobada' OR estado = 'pendiente')");
+    
+    $fechasOcupadas = [];
+    while ($row = $resultOcupadas->fetch_assoc()) {
+        $fechasOcupadas[] = [
+            'start' => $row['fecha_inicio'],
+            'end' => $row['fecha_fin']
+        ];
+    }
+    
+    // Convertir a JSON para usar en JavaScript
+    $fechasBloqueadasJson = json_encode($fechasBloqueadas);
+    $fechasOcupadasJson = json_encode($fechasOcupadas);
+    ?>
+    <div class="container">
+        <h2>SOLICITUD DE VACACIONES</h2>
+        
+        <form id="solicitudForm">
+            <div class="form-group">
+                <label for="inicio">SOLICITO INICIO DE VACACIONES</label>
+                <input type="date" id="inicio" onchange="calcularDias()" min="<?php echo $fechaMinima; ?>">
+            </div>
+            <div class="form-group">
+                <label for="fin">SOLICITO FIN DE VACACIONES</label>
+                <input type="date" id="fin" onchange="calcularDias()" min="<?php echo $fechaMinima; ?>">
+            </div>
+            <div class="form-group">
+                <label for="dias">DIAS A PEDIR</label>
+                <input type="number" id="dias" readonly>
+            </div>
+            <div class="form-group">
+                <p style="text-align: center; font-weight: bold;">
+                    Días disponibles: <span id="dias-disponibles"><?php echo $a_disfrutar; ?></span>
+                </p>
             </div>
             
+            
+            <div class="form-group" style="text-align: center; margin-top: 20px;">
+                <button type="button" class="solicitar-btn" onclick="mostrarCalendarioOcupados()" 
+                        style="background: #6c757d; padding: 10px 20px;">
+                    <i class="fas fa-calendar-alt"></i> Ver Días Ocupados
+                </button>
+            </div>
+        
+            <button type="button" class="submit-btn" onclick="enviarSolicitud()">Enviar Solicitud</button>
+            <a href="?vista=vacaciones" class="solicitar-btn" style="background: #ff0000ff;">Cancelar</a>
+        </form>
+        
+        <!-- Modal para mostrar calendario con días ocupados -->
+        <div id="modalCalendario" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="cerrarModal()">&times;</span>
+                <h3>Calendario de Días Ocupados</h3>
+                <div id="calendarioOcupados"></div>
+                <div style="margin-top: 15px;">
+                    <span style="display: inline-block; width: 15px; height: 15px; background-color: #ffcccc; margin-right: 5px;"></span>
+                    <span>Días ocupados (aprobados o pendientes)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+            
             <script>
-            // Fechas bloqueadas (aprobadas)
-            const fechasBloqueadas = <?php echo $fechasBloqueadasJson; ?>;
+             // Fechas bloqueadas (aprobadas y pendientes del usuario actual)
+    const fechasBloqueadas = <?php echo $fechasBloqueadasJson; ?>;
+    
+    // Todas las fechas ocupadas de todos los usuarios
+    const fechasOcupadas = <?php echo $fechasOcupadasJson; ?>;
+    
+    // Modal functions
+    function mostrarCalendarioOcupados() {
+        document.getElementById('modalCalendario').style.display = 'block';
+        generarCalendario();
+    }
+    
+    function cerrarModal() {
+        document.getElementById('modalCalendario').style.display = 'none';
+    }
+    
+    // Cerrar modal al hacer clic fuera del contenido
+    window.onclick = function(event) {
+        const modal = document.getElementById('modalCalendario');
+        if (event.target == modal) {
+            cerrarModal();
+        }
+    }
+    
+    // Función para generar el calendario con días ocupados
+    function generarCalendario() {
+        const calendarioDiv = document.getElementById('calendarioOcupados');
+        calendarioDiv.innerHTML = '';
+        
+        // Obtener el mes y año actual
+        const hoy = new Date();
+        let mesActual = hoy.getMonth();
+        let añoActual = hoy.getFullYear();
+        
+        // Crear calendario para los próximos 12 meses
+        for (let i = 0; i < 12; i++) {
+            const mes = (mesActual + i) % 12;
+            const año = añoActual + Math.floor((mesActual + i) / 12);
+            
+            // Crear tabla de calendario para este mes
+            const tabla = document.createElement('table');
+            tabla.className = 'calendario-mes';
+            
+            // Encabezado con nombre del mes y año
+            const nombresMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                                 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            const thead = document.createElement('thead');
+            const trHeader = document.createElement('tr');
+            const thHeader = document.createElement('th');
+            thHeader.colSpan = 7;
+            thHeader.textContent = `${nombresMeses[mes]} ${año}`;
+            thHeader.style.textAlign = 'center';
+            thHeader.style.padding = '10px';
+            thHeader.style.backgroundColor = '#f0f0f0';
+            trHeader.appendChild(thHeader);
+            thead.appendChild(trHeader);
+            tabla.appendChild(thead);
+            
+            // Días de la semana
+            const trDias = document.createElement('tr');
+            const diasSemana = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá', 'Do'];
+            diasSemana.forEach(dia => {
+                const th = document.createElement('th');
+                th.textContent = dia;
+                th.style.padding = '5px';
+                trDias.appendChild(th);
+            });
+            thead.appendChild(trDias);
+            
+            // Cuerpo del calendario
+            const tbody = document.createElement('tbody');
+            
+            // Primer día del mes
+            const primerDia = new Date(año, mes, 1);
+            // Último día del mes
+            const ultimoDia = new Date(año, mes + 1, 0);
+            
+            // Día de la semana del primer día (0 = Domingo, 1 = Lunes, ...)
+            let diaSemana = primerDia.getDay();
+            // Ajustar para que la semana comience en Lunes (1)
+            diaSemana = diaSemana === 0 ? 6 : diaSemana - 1;
+            
+            let tr = document.createElement('tr');
+            
+            // Celdas vacías antes del primer día
+            for (let j = 0; j < diaSemana; j++) {
+                const td = document.createElement('td');
+                tr.appendChild(td);
+            }
+            
+            // Días del mes
+            for (let dia = 1; dia <= ultimoDia.getDate(); dia++) {
+                const fechaActual = new Date(año, mes, dia);
+                const fechaStr = fechaActual.toISOString().split('T')[0];
+                
+                const td = document.createElement('td');
+                td.textContent = dia;
+                td.style.padding = '5px';
+                td.style.textAlign = 'center';
+                
+                // Verificar si la fecha está ocupada
+                const estaOcupada = fechasOcupadas.some(periodo => {
+                    const inicio = new Date(periodo.start);
+                    const fin = new Date(periodo.end);
+                    return fechaActual >= inicio && fechaActual <= fin;
+                });
+                
+                if (estaOcupada) {
+                    td.style.backgroundColor = '#ffcccc';
+                    td.title = 'Día ocupado (aprobado o pendiente)';
+                }
+                
+                // Marcar el día actual
+                if (fechaActual.toDateString() === hoy.toDateString()) {
+                    td.style.border = '2px solid #007bff';
+                }
+                
+                tr.appendChild(td);
+                
+                // Si es domingo (último día de la semana), crear nueva fila
+                if ((diaSemana + dia) % 7 === 0) {
+                    tbody.appendChild(tr);
+                    tr = document.createElement('tr');
+                }
+            }
+            
+            // Añadir la última fila si tiene contenido
+            if (tr.cells.length > 0) {
+                tbody.appendChild(tr);
+            }
+            
+            tabla.appendChild(tbody);
+            calendarioDiv.appendChild(tabla);
+        }
+    }
             
             function validarFechasNoBloqueadas(inicio, fin) {
                 const inicioDate = new Date(inicio);

@@ -29,8 +29,8 @@ CREATE TABLE vacaciones (
 );
 
 -- Luego inserta de nuevo tus datos
-INSERT INTO vacaciones (id_empleado, dias_totales, dias_asignados, dias_disfrutados)
-VALUES (1, 20, 6, 0);
+--INSERT INTO vacaciones (id_empleado, dias_totales, dias_asignados, dias_disfrutados)
+--VALUES (1, 20, 6, 0);
 
 DROP TABLE solicitudes;
 
