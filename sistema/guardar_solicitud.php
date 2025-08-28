@@ -7,10 +7,7 @@ if (!isset($_SESSION['empleado_id'])) {
 header('Content-Type: application/json');
 
 // Configuración de la base de datos
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "PreisaVacaciones";
+require_once '../db_config.php'; // Archivo con configuración de BD
 
 // Crear conexión
 $conn = new mysqli($servername, $username, $password, $dbname);

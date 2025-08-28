@@ -7,10 +7,7 @@ if (!isset($_SESSION['empleado_id'])) {
 header('Content-Type: application/json');
 
 // Configuración de la base de datos
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "PreisaVacaciones";
+require_once '../db_config.php'; // Archivo con configuración de BD
 
 try {
     // Crear conexión
@@ -22,6 +19,7 @@ try {
 
     $id_solicitud = $_POST['id'] ?? null;
     $accion = $_POST['accion'] ?? null;
+    $motivo = $_POST['motivo'] ?? '';
 
     if (!$id_solicitud || !$accion) {
         throw new Exception('Datos incompletos');
@@ -39,17 +37,29 @@ try {
     }
 
     if ($accion === 'aprobar') {
-    // Actualizar estado de la solicitud (sin tocar días disfrutados)
-    if (!$conn->query("UPDATE solicitudes SET estado = 'aprobada', fecha_aprobacion = NOW() WHERE id = $id_solicitud")) {
-        throw new Exception("Error al aprobar: " . $conn->error);
-    }
-    
-    echo json_encode(['success' => 'Solicitud aprobada']);
+        // Actualizar estado de la solicitud (sin tocar días disfrutados)
+        if (!$conn->query("UPDATE solicitudes SET estado = 'aprobada', fecha_aprobacion = NOW() WHERE id = $id_solicitud")) {
+            throw new Exception("Error al aprobar: " . $conn->error);
+        }
+        
+        echo json_encode(['success' => 'Solicitud aprobada']);
     } else {
+        // Validar que se haya proporcionado un motivo para el rechazo
+        if (empty($motivo)) {
+            throw new Exception('Debe proporcionar un motivo para el rechazo');
+        }
+        
         // Actualizar estado a rechazada
         if (!$conn->query("UPDATE solicitudes SET estado = 'rechazada', fecha_aprobacion = NOW() WHERE id = $id_solicitud")) {
             throw new Exception("Error al rechazar: " . $conn->error);
         }
+        
+        // Guardar el motivo del rechazo en la nueva tabla
+        $motivo_escapado = $conn->real_escape_string($motivo);
+        if (!$conn->query("INSERT INTO rechazos_vacaciones (id_solicitud, motivo) VALUES ($id_solicitud, '$motivo_escapado')")) {
+            throw new Exception("Error al guardar motivo: " . $conn->error);
+        }
+        
         echo json_encode(['success' => 'Solicitud rechazada']);
     }
 } catch (Exception $e) {

@@ -3,11 +3,7 @@ session_start();
 header('Content-Type: application/json');
 
 // Configuración de la base de datos
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "PreisaVacaciones";
-
+require_once '../db_config.php'; // Archivo con configuración de BD
 
 // Crear conexión
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -27,7 +23,8 @@ if (!$inicio || !$fin) {
     exit();
 }
 
-// Verificar si hay solapamiento con otras solicitudes aprobadas o pendientes de cualquier usuario
+
+// En guardar_solicitud.php, modificar la consulta de verificación de solapamiento:
 $stmt = $conn->prepare("SELECT s.id, e.nombre 
     FROM solicitudes s
     JOIN empleados e ON s.id_empleado = e.id

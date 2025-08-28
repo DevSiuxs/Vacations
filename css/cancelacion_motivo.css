@@ -1,0 +1,56 @@
+/* Estilos para el modal de rechazo */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 50%;
+    border-radius: 8px;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: black;
+}
+
+/* Estilos para la información de rechazo */
+.rechazo-info {
+    background-color: #fff3f3;
+    border: 1px solid #ffcccc;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 20px 0;
+}
+
+.rechazo-info h3 {
+    color: #d9534f;
+    margin-top: 0;
+}
+
+/* Estilos para el textarea */
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: vertical;
+    min-height: 100px;
+}

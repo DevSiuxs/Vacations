@@ -5,10 +5,8 @@ if (!isset($_SESSION['empleado_id'])) {
     exit();
 }
 // Configuración de la base de datos
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "PreisaVacaciones";
+
+require_once '../db_config.php'; // Archivo con configuración de BDciones";
 
 // Crear conexión
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -77,7 +75,9 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
     <link rel="stylesheet" href="../css/pending.css">
     <!-- ver_dias_ocupados -->
      <link rel="stylesheet" href="../css/ver_dias_ocupados.css">
-    
+    <!-- cancelacion_motivo -->
+     <link rel="stylesheet" href="../css/cancelacion_motivo.css">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 </head>
@@ -283,116 +283,130 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
     }
     
     // Función para generar el calendario con días ocupados
-    function generarCalendario() {
-        const calendarioDiv = document.getElementById('calendarioOcupados');
-        calendarioDiv.innerHTML = '';
+function generarCalendario() {
+    const calendarioDiv = document.getElementById('calendarioOcupados');
+    calendarioDiv.innerHTML = '';
+    
+    // Obtener el mes y año actual
+    const hoy = new Date();
+    let mesActual = hoy.getMonth();
+    let añoActual = hoy.getFullYear();
+    
+    // Calcular la fecha mínima para vacaciones (15 días después de hoy)
+    const fechaMinimaVacaciones = new Date(hoy);
+    fechaMinimaVacaciones.setDate(hoy.getDate() + 15);
+    const fechaMinimaStr = fechaMinimaVacaciones.toISOString().split('T')[0];
+    
+    // Crear calendario para los próximos 12 meses
+    for (let i = 0; i < 12; i++) {
+        const mes = (mesActual + i) % 12;
+        const año = añoActual + Math.floor((mesActual + i) / 12);
         
-        // Obtener el mes y año actual
-        const hoy = new Date();
-        let mesActual = hoy.getMonth();
-        let añoActual = hoy.getFullYear();
+        // Crear tabla de calendario para este mes
+        const tabla = document.createElement('table');
+        tabla.className = 'calendario-mes';
         
-        // Crear calendario para los próximos 12 meses
-        for (let i = 0; i < 12; i++) {
-            const mes = (mesActual + i) % 12;
-            const año = añoActual + Math.floor((mesActual + i) / 12);
-            
-            // Crear tabla de calendario para este mes
-            const tabla = document.createElement('table');
-            tabla.className = 'calendario-mes';
-            
-            // Encabezado con nombre del mes y año
-            const nombresMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
-                                 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-            const thead = document.createElement('thead');
-            const trHeader = document.createElement('tr');
-            const thHeader = document.createElement('th');
-            thHeader.colSpan = 7;
-            thHeader.textContent = `${nombresMeses[mes]} ${año}`;
-            thHeader.style.textAlign = 'center';
-            thHeader.style.padding = '10px';
-            thHeader.style.backgroundColor = '#f0f0f0';
-            trHeader.appendChild(thHeader);
-            thead.appendChild(trHeader);
-            tabla.appendChild(thead);
-            
-            // Días de la semana
-            const trDias = document.createElement('tr');
-            const diasSemana = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá', 'Do'];
-            diasSemana.forEach(dia => {
-                const th = document.createElement('th');
-                th.textContent = dia;
-                th.style.padding = '5px';
-                trDias.appendChild(th);
-            });
-            thead.appendChild(trDias);
-            
-            // Cuerpo del calendario
-            const tbody = document.createElement('tbody');
-            
-            // Primer día del mes
-            const primerDia = new Date(año, mes, 1);
-            // Último día del mes
-            const ultimoDia = new Date(año, mes + 1, 0);
-            
-            // Día de la semana del primer día (0 = Domingo, 1 = Lunes, ...)
-            let diaSemana = primerDia.getDay();
-            // Ajustar para que la semana comience en Lunes (1)
-            diaSemana = diaSemana === 0 ? 6 : diaSemana - 1;
-            
-            let tr = document.createElement('tr');
-            
-            // Celdas vacías antes del primer día
-            for (let j = 0; j < diaSemana; j++) {
-                const td = document.createElement('td');
-                tr.appendChild(td);
-            }
-            
-            // Días del mes
-            for (let dia = 1; dia <= ultimoDia.getDate(); dia++) {
-                const fechaActual = new Date(año, mes, dia);
-                const fechaStr = fechaActual.toISOString().split('T')[0];
-                
-                const td = document.createElement('td');
-                td.textContent = dia;
-                td.style.padding = '5px';
-                td.style.textAlign = 'center';
-                
-                // Verificar si la fecha está ocupada
-                const estaOcupada = fechasOcupadas.some(periodo => {
-                    const inicio = new Date(periodo.start);
-                    const fin = new Date(periodo.end);
-                    return fechaActual >= inicio && fechaActual <= fin;
-                });
-                
-                if (estaOcupada) {
-                    td.style.backgroundColor = '#ffcccc';
-                    td.title = 'Día ocupado (aprobado o pendiente)';
-                }
-                
-                // Marcar el día actual
-                if (fechaActual.toDateString() === hoy.toDateString()) {
-                    td.style.border = '2px solid #007bff';
-                }
-                
-                tr.appendChild(td);
-                
-                // Si es domingo (último día de la semana), crear nueva fila
-                if ((diaSemana + dia) % 7 === 0) {
-                    tbody.appendChild(tr);
-                    tr = document.createElement('tr');
-                }
-            }
-            
-            // Añadir la última fila si tiene contenido
-            if (tr.cells.length > 0) {
-                tbody.appendChild(tr);
-            }
-            
-            tabla.appendChild(tbody);
-            calendarioDiv.appendChild(tabla);
+        // Encabezado con nombre del mes y año
+        const nombresMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                             'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        const thead = document.createElement('thead');
+        const trHeader = document.createElement('tr');
+        const thHeader = document.createElement('th');
+        thHeader.colSpan = 7;
+        thHeader.textContent = `${nombresMeses[mes]} ${año}`;
+        thHeader.style.textAlign = 'center';
+        thHeader.style.padding = '10px';
+        thHeader.style.backgroundColor = '#f0f0f0';
+        trHeader.appendChild(thHeader);
+        thead.appendChild(trHeader);
+        tabla.appendChild(thead);
+        
+        // Días de la semana
+        const trDias = document.createElement('tr');
+        const diasSemana = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá', 'Do'];
+        diasSemana.forEach(dia => {
+            const th = document.createElement('th');
+            th.textContent = dia;
+            th.style.padding = '5px';
+            trDias.appendChild(th);
+        });
+        thead.appendChild(trDias);
+        
+        // Cuerpo del calendario
+        const tbody = document.createElement('tbody');
+        
+        // Primer día del mes
+        const primerDia = new Date(año, mes, 1);
+        // Último día del mes
+        const ultimoDia = new Date(año, mes + 1, 0);
+        
+        // Día de la semana del primer día (0 = Domingo, 1 = Lunes, ...)
+        let diaSemana = primerDia.getDay();
+        // Ajustar para que la semana comience en Lunes (1)
+        diaSemana = diaSemana === 0 ? 6 : diaSemana - 1;
+        
+        let tr = document.createElement('tr');
+        
+        // Celdas vacías antes del primer día
+        for (let j = 0; j < diaSemana; j++) {
+            const td = document.createElement('td');
+            tr.appendChild(td);
         }
+        
+        // Días del mes
+        for (let dia = 1; dia <= ultimoDia.getDate(); dia++) {
+            const fechaActual = new Date(año, mes, dia);
+            const fechaStr = fechaActual.toISOString().split('T')[0];
+            
+            const td = document.createElement('td');
+            td.textContent = dia;
+            td.style.padding = '5px';
+            td.style.textAlign = 'center';
+            
+            // Verificar si la fecha está ocupada (MÉTODO SIMPLE)
+            const estaOcupada = fechasOcupadas.some(periodo => {
+                const inicioStr = periodo.start;
+                const finStr = periodo.end;
+                
+                return fechaStr >= inicioStr && fechaStr <= finStr;
+            });
+            
+            if (estaOcupada) {
+                td.style.backgroundColor = '#ffcccc';
+                td.title = 'Día ocupado (aprobado o pendiente)';
+            }
+            
+            // Verificar si la fecha es 15 días después de hoy (disponible para vacaciones)
+            if (fechaStr === fechaMinimaStr) {
+    if (!estaOcupada) {
+        td.style.backgroundColor = '#ccffcc';
+        td.title = 'Día disponible para vacaciones';
     }
+}
+            
+            // Marcar el día actual
+            if (fechaActual.toDateString() === hoy.toDateString()) {
+                td.style.border = '2px solid #00ff2aff';
+            }
+            
+            tr.appendChild(td);
+            
+            // Si es domingo (último día de la semana), crear nueva fila
+            if ((diaSemana + dia) % 7 === 0) {
+                tbody.appendChild(tr);
+                tr = document.createElement('tr');
+            }
+        }
+        
+        // Añadir la última fila si tiene contenido
+        if (tr.cells.length > 0) {
+            tbody.appendChild(tr);
+        }
+        
+        tabla.appendChild(tbody);
+        calendarioDiv.appendChild(tabla);
+    }
+}
             
             function validarFechasNoBloqueadas(inicio, fin) {
                 const inicioDate = new Date(inicio);
@@ -490,193 +504,230 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
         }
         
         function mostrarRHPeriodos() {
-            global $solicitudes;
-            ?>
-            <div class="container">
-                <h1>PERIODOS DE VACACIONES</h1>
-                
-                <?php if ($solicitudes->num_rows > 0): ?>
-                    <?php while($solicitud = $solicitudes->fetch_assoc()): ?>
-                        <div class="employee-periods">
-                            <div class="employee-header">
-                                <span><?php echo $solicitud['nombre']; ?></span>
-                            </div>
-                            <div class="period-info">
-                                <div class="info-item">
-                                    <span class="label">Periodo</span>
-                                    <span class="value"><?php echo date('d M', strtotime($solicitud['fecha_inicio'])); ?> al <?php echo date('d M', strtotime($solicitud['fecha_fin'])); ?></span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">Días</span>
-                                    <span class="value"><?php echo $solicitud['dias_solicitados']; ?></span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="label">Status</span>
-                                    <span class="status-badge status-pendiente">PENDIENTE</span>
-                                </div>
-                            </div>
-                            
-                            <div class="actions">
-                                <button class="action-btn accept-btn" onclick="aprobarSolicitud(<?php echo $solicitud['id']; ?>)">
-                                    <i>✓</i> Aceptar
-                                </button>
-                                <button class="action-btn cancel-btn" onclick="rechazarSolicitud(<?php echo $solicitud['id']; ?>)">
-                                    <i>✕</i> Cancelar
-                                </button>
-                            </div>
-                        </div>
-                    <?php endwhile; ?>
-                <?php else: ?>
-                    <div class="info-item" style="text-align: center; padding: 40px;">
-                        <p style="font-size: 18px;">No hay solicitudes pendientes</p>
+    global $solicitudes;
+    ?>
+    <div class="container">
+        <h1>PERIODOS DE VACACIONES</h1>
+        
+        <?php if ($solicitudes->num_rows > 0): ?>
+            <?php while($solicitud = $solicitudes->fetch_assoc()): ?>
+                <div class="employee-periods">
+                    <div class="employee-header">
+                        <span><?php echo $solicitud['nombre']; ?></span>
                     </div>
-                <?php endif; ?>
-                
-                <a href="?vista=disponibilidad" class="next-btn">Siguiente</a>
+                    <div class="period-info">
+                        <div class="info-item">
+                            <span class="label">Periodo</span>
+                            <span class="value"><?php echo date('d M', strtotime($solicitud['fecha_inicio'])); ?> al <?php echo date('d M', strtotime($solicitud['fecha_fin'])); ?></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Días</span>
+                            <span class="value"><?php echo $solicitud['dias_solicitados']; ?></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Status</span>
+                            <span class="status-badge status-pendiente">PENDIENTE</span>
+                        </div>
+                    </div>
+                    
+                    <div class="actions">
+                        <button class="action-btn accept-btn" onclick="aprobarSolicitud(<?php echo $solicitud['id']; ?>)">
+                            <i>✓</i> Aceptar
+                        </button>
+                        <button class="action-btn cancel-btn" onclick="mostrarModalRechazo(<?php echo $solicitud['id']; ?>)">
+                            <i>✕</i> Cancelar
+                        </button>
+                    </div>
+                </div>
+            <?php endwhile; ?>
+        <?php else: ?>
+            <div class="info-item" style="text-align: center; padding: 40px;">
+                <p style="font-size: 18px;">No hay solicitudes pendientes</p>
             </div>
-            <?php
-        }
+        <?php endif; ?>
+        
+        <a href="?vista=disponibilidad" class="next-btn">Siguiente</a>
+        
+        <!-- Modal para motivo de rechazo -->
+        <div id="modalRechazo" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="cerrarModalRechazo()">&times;</span>
+                <h3>Motivo del Rechazo</h3>
+                <form id="formRechazo">
+                    <input type="hidden" id="idSolicitudRechazo">
+                    <div class="form-group">
+                        <label for="motivoRechazo">Por favor, indica el motivo del rechazo:</label>
+                        <textarea id="motivoRechazo" rows="4" required></textarea>
+                    </div>
+                    <button type="button" class="solicitar-btn" onclick="rechazarSolicitudConMotivo()">Enviar Rechazo</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <?php
+}
         
         function mostrarDisponibilidad() {
-            global $empleado, $vacaciones, $conn;
-            $id_empleado = $_SESSION['empleado_id']; // Usar el ID de la sesión
-            
-            // Calcular días teóricos disponibles (sin considerar disfrutados)
-            $dias_teoricos = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'];
-            
-            // Obtener días en espera (solicitudes pendientes)
-            $dias_en_espera = 0;
-            $result = $conn->query("SELECT SUM(dias_solicitados) as total FROM solicitudes 
-                                  WHERE id_empleado = $id_empleado AND estado = 'pendiente'");
-            if ($result->num_rows > 0) {
-                $row = $result->fetch_assoc();
-                $dias_en_espera = $row['total'] ?? 0;
-            }
-            
-            // Obtener última solicitud (la más reciente sin importar estado)
-            $ultima_solicitud = null;
-            $result_ultima = $conn->query("SELECT * FROM solicitudes 
-                                         WHERE id_empleado = $id_empleado
-                                         ORDER BY id DESC LIMIT 1");
-            if ($result_ultima->num_rows > 0) {
-                $ultima_solicitud = $result_ultima->fetch_assoc();
-            }
-            
-            // Obtener el estado más reciente - MODIFICADO
-            $estado_vacaciones = "AÚN NO SOLICITADAS"; // Valor por defecto
-            $result_estado = $conn->query("SELECT estado FROM solicitudes 
-                                         WHERE id_empleado = $id_empleado 
-                                         ORDER BY id DESC LIMIT 1");
-            if ($result_estado->num_rows > 0) {
-                $row_estado = $result_estado->fetch_assoc();
-                $estado_vacaciones = strtoupper($row_estado['estado']);
-            }
-            
-            // Calcular días realmente disponibles (sin restar aprobadas hasta que llegue la fecha)
-            $dias_reales_disponibles = $dias_teoricos - $dias_en_espera;
-            
-            // Verificar si hay vacaciones aprobadas que ya deberían estar en disfrutados
-            $hoy = new DateTime();
-            $result_por_disfrutar = $conn->query("SELECT SUM(dias_solicitados) as total FROM solicitudes 
-                                                WHERE id_empleado = $id_empleado 
-                                                AND estado = 'aprobada' 
-                                                AND fecha_inicio <= '".$hoy->format('Y-m-d')."'");
-            if ($result_por_disfrutar->num_rows > 0) {
-                $row = $result_por_disfrutar->fetch_assoc();
-                $dias_reales_disponibles -= $row['total'] ?? 0;
-            }
-            
-            $dias_reales_disponibles = max(0, $dias_reales_disponibles);
-            ?>
-        
-            <div class="container">
-                <h2>VACACIONES DISPONIBLES</h2>
-                
-                <div class="proposition-list">
-                    <div class="proposition-item highlight">
-                        <span class="year">DIAS DE VACACIONES</span>
-                        <span class="days"><?php echo $vacaciones['dias_totales']; ?></span>
-                    </div>
-                    <div class="proposition-item highlight">
-                        <span class="year">ASIGNADOS</span>
-                        <span class="days"><?php echo $vacaciones['dias_asignados']; ?></span>
-                    </div>
-                    <div class="proposition-item highlight">
-                        <span class="year">DISFRUTO</span>
-                        <span class="days"><?php echo $vacaciones['dias_disfrutados']; ?></span>
-                    </div>
-                    <div class="proposition-item used">
-                        <span class="year">A DISFRUTAR</span>
-                        <span class="days"><?php echo $dias_reales_disponibles; ?></span>
-                    </div>
-                    <div class="proposition-item highlight" style="background: linear-gradient(135deg, #ff9966, #ff5e62);">
-                        <span class="year">EN ESPERA</span>
-                        <span class="days"><?php echo $dias_en_espera; ?></span>
-                    </div>
-                    <div class="proposition-item highlight">
-            <span class="year">STATUS</span>
-            <span class="days status-badge <?php 
-                if ($estado_vacaciones == 'AÚN NO SOLICITADAS') {
-                    echo 'status-pendiente'; // Usar el mismo estilo que pendiente
-                } else {
-                    echo ($estado_vacaciones == 'APROBADA') ? 'status-aprobado' : 
-                         (($estado_vacaciones == 'RECHAZADA') ? 'status-rechazado' : 'status-pendiente'); 
-                }
-            ?>">
-                <?php 
-                echo $estado_vacaciones; 
-                if ($ultima_solicitud && $estado_vacaciones != 'AÚN NO SOLICITADAS') {
-                    echo " ({$ultima_solicitud['dias_solicitados']} días)";
-                }
-                ?>
-            </span>
-        </div>
-                </div>
-                
-                <!-- Mostrar solicitudes pendientes -->
-                <div class="pending-requests">
-                    <h3>Solicitudes Pendientes</h3>
-                    <?php
-                    $solicitudes_pendientes = $conn->query("SELECT * FROM solicitudes 
-                                                           WHERE id_empleado = $id_empleado 
-                                                           AND estado = 'pendiente'");
-                    if ($solicitudes_pendientes->num_rows > 0): ?>
-                        <div class="requests-list">
-                            <?php while($solicitud = $solicitudes_pendientes->fetch_assoc()): ?>
-                                <div class="request-item">
-                                    <span><?php echo date('d/m/Y', strtotime($solicitud['fecha_inicio'])); ?> - <?php echo date('d/m/Y', strtotime($solicitud['fecha_fin'])); ?></span>
-                                    <span><?php echo $solicitud['dias_solicitados']; ?> días</span>
-                                    <span class="status-badge status-pendiente">PENDIENTE</span>
-                                </div>
-                            <?php endwhile; ?>
-                        </div>
-                    <?php else: ?>
-                        <p>No tienes solicitudes pendientes</p>
-                        <?php if ($estado_vacaciones != 'AÚN NO SOLICITADAS'): ?>
-                            <p>Pero <b>recuerda</b> Si tu status es <b style="color:#6f0;">APROBADA</b> 
-                            PORFAVOR acude a RecursosHumanos para que firmes la solicitud de vacaciones. 
-                            SI NO FIRMAS TUS VACACIONES EN PAPEL SERAN CANCELADAS EN UNA SEMANA</p>
-                        <?php else: ?>
-                            <p>Puedes solicitar tus vacaciones desde la sección principal.</p>
-                        <?php endif; ?>
-                    <?php endif; ?>
-                </div>
-                
-                <div class="footer">
-                    <a href="?vista=vacaciones">Regresar</a>
-                    <span>a Inicio</span><br>
-                    <a href="#" target="_blank">Descargar Solicitud</a>
-                </div>
-            </div>
-            <?php
+    global $empleado, $vacaciones, $conn;
+    $id_empleado = $_SESSION['empleado_id']; // Usar el ID de la sesión
+    
+    // Calcular días teóricos disponibles (sin considerar disfrutados)
+    $dias_teoricos = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'];
+    
+    // Obtener días en espera (solicitudes pendientes)
+    $dias_en_espera = 0;
+    $result = $conn->query("SELECT SUM(dias_solicitados) as total FROM solicitudes 
+                          WHERE id_empleado = $id_empleado AND estado = 'pendiente'");
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $dias_en_espera = $row['total'] ?? 0;
+    }
+    
+    // Obtener última solicitud (la más reciente sin importar estado)
+    $ultima_solicitud = null;
+    $result_ultima = $conn->query("SELECT * FROM solicitudes 
+                                 WHERE id_empleado = $id_empleado
+                                 ORDER BY id DESC LIMIT 1");
+    if ($result_ultima->num_rows > 0) {
+        $ultima_solicitud = $result_ultima->fetch_assoc();
+    }
+    
+    // Obtener el estado más reciente
+    $estado_vacaciones = "AÚN NO SOLICITADAS"; // Valor por defecto
+    $result_estado = $conn->query("SELECT estado FROM solicitudes 
+                                 WHERE id_empleado = $id_empleado 
+                                 ORDER BY id DESC LIMIT 1");
+    if ($result_estado->num_rows > 0) {
+        $row_estado = $result_estado->fetch_assoc();
+        $estado_vacaciones = strtoupper($row_estado['estado']);
+    }
+    
+    // Obtener motivo de rechazo si la última solicitud fue rechazada
+    $motivo_rechazo = "";
+    if ($estado_vacaciones == 'RECHAZADA' && $ultima_solicitud) {
+        $result_motivo = $conn->query("SELECT motivo FROM rechazos_vacaciones 
+                                     WHERE id_solicitud = {$ultima_solicitud['id']} 
+                                     ORDER BY id DESC LIMIT 1");
+        if ($result_motivo->num_rows > 0) {
+            $row_motivo = $result_motivo->fetch_assoc();
+            $motivo_rechazo = $row_motivo['motivo'];
         }
+    }
+    
+    // Calcular días realmente disponibles (sin restar aprobadas hasta que llegue la fecha)
+    $dias_reales_disponibles = $dias_teoricos - $dias_en_espera;
+    
+    // Verificar si hay vacaciones aprobadas que ya deberían estar en disfrutados
+    $hoy = new DateTime();
+    $result_por_disfrutar = $conn->query("SELECT SUM(dias_solicitados) as total FROM solicitudes 
+                                        WHERE id_empleado = $id_empleado 
+                                        AND estado = 'aprobada' 
+                                        AND fecha_inicio <= '".$hoy->format('Y-m-d')."'");
+    if ($result_por_disfrutar->num_rows > 0) {
+        $row = $result_por_disfrutar->fetch_assoc();
+        $dias_reales_disponibles -= $row['total'] ?? 0;
+    }
+    
+    $dias_reales_disponibles = max(0, $dias_reales_disponibles);
+    ?>
+    
+    <div class="container">
+        <h2>VACACIONES DISPONIBLES</h2>
+        
+        <div class="proposition-list">
+            <div class="proposition-item highlight">
+                <span class="year">DIAS DE VACACIONES</span>
+                <span class="days"><?php echo $vacaciones['dias_totales']; ?></span>
+            </div>
+            <div class="proposition-item highlight">
+                <span class="year">ASIGNADOS</span>
+                <span class="days"><?php echo $vacaciones['dias_asignados']; ?></span>
+            </div>
+            <div class="proposition-item highlight">
+                <span class="year">DISFRUTO</span>
+                <span class="days"><?php echo $vacaciones['dias_disfrutados']; ?></span>
+            </div>
+            <div class="proposition-item used">
+                <span class="year">A DISFRUTAR</span>
+                <span class="days"><?php echo $dias_reales_disponibles; ?></span>
+            </div>
+            <div class="proposition-item highlight" style="background: linear-gradient(135deg, #ff9966, #ff5e62);">
+                <span class="year">EN ESPERA</span>
+                <span class="days"><?php echo $dias_en_espera; ?></span>
+            </div>
+            <div class="proposition-item highlight">
+                <span class="year">STATUS</span>
+                <span class="days status-badge <?php 
+                    if ($estado_vacaciones == 'AÚN NO SOLICITADAS') {
+                        echo 'status-pendiente'; // Usar el mismo estilo que pendiente
+                    } else {
+                        echo ($estado_vacaciones == 'APROBADA') ? 'status-aprobado' : 
+                             (($estado_vacaciones == 'RECHAZADA') ? 'status-rechazado' : 'status-pendiente'); 
+                    }
+                ?>">
+                    <?php 
+                    echo $estado_vacaciones; 
+                    if ($ultima_solicitud && $estado_vacaciones != 'AÚN NO SOLICITADAS') {
+                        echo " ({$ultima_solicitud['dias_solicitados']} días)";
+                    }
+                    ?>
+                </span>
+            </div>
+        </div>
+        
+        <!-- Mostrar motivo de rechazo si aplica -->
+        <?php if ($estado_vacaciones == 'RECHAZADA' && !empty($motivo_rechazo)): ?>
+            <div class="rechazo-info">
+                <h3>Motivo del rechazo:</h3>
+                <p><?php echo htmlspecialchars($motivo_rechazo); ?></p>
+            </div>
+        <?php endif; ?>
+        
+        <!-- Mostrar solicitudes pendientes -->
+        <div class="pending-requests">
+            <h3>Solicitudes Pendientes</h3>
+            <?php
+            $solicitudes_pendientes = $conn->query("SELECT * FROM solicitudes 
+                                                   WHERE id_empleado = $id_empleado 
+                                                   AND estado = 'pendiente'");
+            if ($solicitudes_pendientes->num_rows > 0): ?>
+                <div class="requests-list">
+                    <?php while($solicitud = $solicitudes_pendientes->fetch_assoc()): ?>
+                        <div class="request-item">
+                            <span><?php echo date('d/m/Y', strtotime($solicitud['fecha_inicio'])); ?> - <?php echo date('d/m/Y', strtotime($solicitud['fecha_fin'])); ?></span>
+                            <span><?php echo $solicitud['dias_solicitados']; ?> días</span>
+                            <span class="status-badge status-pendiente">PENDIENTE</span>
+                        </div>
+                    <?php endwhile; ?>
+                </div>
+            <?php else: ?>
+                <?php if ($estado_vacaciones == 'APROBADA'): ?>
+                    <p>Pero <b>recuerda</b> Si tu status es <b style="color:#6f0;">APROBADA</b> 
+                    PORFAVOR acude a RecursosHumanos para que firmes la solicitud de vacaciones. 
+                    SI NO FIRMAS TUS VACACIONES EN PAPEL SERAN CANCELADAS EN UNA SEMANA</p>
+                <?php elseif ($estado_vacaciones == 'RECHAZADA'): ?>
+                    <p>Tu última solicitud de vacaciones fue <b style="color:red;">RECHAZADA</b>. 
+                    Puedes ver el motivo arriba y solicitar un nuevo período si lo deseas.</p>
+                <?php else: ?>
+                    <p>Puedes solicitar tus vacaciones desde la sección principal.</p>
+                <?php endif; ?>
+            <?php endif; ?>
+        </div>
+        
+        <div class="footer">
+            <a href="?vista=vacaciones">Regresar</a>
+            <span>a Inicio</span><br>
+            <a href="#" target="_blank">Descargar Solicitud</a>
+        </div>
+    </div>
+    <?php
+}
         ?>
     </main>
     
     <script>
          const diasDisponibles = <?php echo $a_disfrutar; ?>;
         
-        // Reemplazar el código window.onload actual con:
         window.onload = function() {
             // Solo establecer min en elementos que existen
             const inicioInput = document.getElementById('inicio');
@@ -724,37 +775,37 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
                 },
                 body: `inicio=${inicio}&fin=${fin}&dias=${dias}`
             })
-            .then(response => {
-                // Restaurar botón
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-                
-                // Verificar si la respuesta es JSON
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    return response.text().then(text => {
-                        console.error('Respuesta no JSON:', text);
-                        throw new Error('Error del servidor: ' + text);
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.error) {
-                    alert("Error: " + data.error);
-                } else {
-                    alert("Solicitud enviada correctamente");
-                    window.location.href = "?vista=disponibilidad";
-                }
-            })
-            .catch(error => {
-                // Restaurar botón en caso de error también
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-                
-                console.error('Error completo:', error);
-                alert("Error al guardar la solicitud: " + error.message);
-            });
+            // En el archivo index.php, dentro de la función enviarSolicitud():
+.then(response => {
+    submitBtn.textContent = originalText;
+    submitBtn.disabled = false;
+    
+    // Verificar si la respuesta es JSON
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+        return response.text().then(text => {
+            console.error('Respuesta no JSON:', text);
+            // Mostrar un mensaje de error más específico
+            alert('Error del servidor. Por favor, contacta al administrador.');
+            throw new Error('Error del servidor: ' + text);
+        });
+    }
+    return response.json();
+})
+.then(data => {
+    if (data.error) {
+        alert("Error: " + data.error);
+    } else {
+        alert("Solicitud enviada correctamente");
+        window.location.href = "?vista=disponibilidad";
+    }
+})
+.catch(error => {
+    submitBtn.textContent = originalText;
+    submitBtn.disabled = false;
+    console.error('Error completo:', error);
+    alert("Error al guardar la solicitud. Por favor, verifica la consola para más detalles.");
+});
         }
         
         // Función para aprobar solicitud
@@ -779,7 +830,8 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
                         alert("Error al procesar: " + data.error);
                     } else {
                         alert(data.success);
-                        window.location.href = "?vista=disponibilidad";
+                        // No redirigir automáticamente, permanecer en la misma vista
+                        location.reload();
                     }
                 })
                 .catch(error => {
@@ -789,15 +841,35 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
             }
         }
         
-        // Función para rechazar solicitud
-        function rechazarSolicitud(id) {
+        // Función para mostrar modal de rechazo
+        function mostrarModalRechazo(idSolicitud) {
+            document.getElementById('idSolicitudRechazo').value = idSolicitud;
+            document.getElementById('modalRechazo').style.display = 'block';
+        }
+
+        // Función para cerrar modal de rechazo
+        function cerrarModalRechazo() {
+            document.getElementById('modalRechazo').style.display = 'none';
+            document.getElementById('motivoRechazo').value = '';
+        }
+
+        // Función para rechazar solicitud con motivo
+        function rechazarSolicitudConMotivo() {
+            const idSolicitud = document.getElementById('idSolicitudRechazo').value;
+            const motivo = document.getElementById('motivoRechazo').value;
+            
+            if (!motivo.trim()) {
+                alert('Por favor, ingresa el motivo del rechazo');
+                return;
+            }
+            
             if (confirm("¿Estás seguro de rechazar esta solicitud de vacaciones?")) {
                 fetch('aprobar_solicitud.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: `id=${id}&accion=rechazar`
+                    body: `id=${idSolicitud}&accion=rechazar&motivo=${encodeURIComponent(motivo)}`
                 })
                 .then(response => {
                     if (!response.ok) {
@@ -811,7 +883,9 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
                         alert("Error al procesar: " + data.error);
                     } else {
                         alert(data.success);
-                        window.location.href = "?vista=disponibilidad";
+                        cerrarModalRechazo();
+                        // No redirigir automáticamente, permanecer en la misma vista
+                        location.reload();
                     }
                 })
                 .catch(error => {

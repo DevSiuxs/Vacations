@@ -45,3 +45,10 @@ CREATE TABLE solicitudes (
     FOREIGN KEY (id_empleado) REFERENCES empleados(id)
     
 );
+CREATE TABLE rechazos_vacaciones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_solicitud INT NOT NULL,
+    motivo TEXT NOT NULL,
+    fecha_rechazo DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_solicitud) REFERENCES solicitudes(id)
+);
