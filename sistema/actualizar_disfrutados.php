@@ -5,7 +5,7 @@ if (!isset($_SESSION['empleado_id'])) {
     exit();
 }
 // Configuración de la base de datos
-require_once '../db_config.php'; // Archivo con configuración de BD
+require_once '../db_config.php'; 
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 

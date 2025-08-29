@@ -178,7 +178,7 @@
         .solicitar-btn {
             background: linear-gradient(to right, #00b09b, #96c93d);
             color: white;
-            box-shadow: 0 4px 15px rgba(0, 176, 155, 0.4);
+            box-shadow: 0 4px 15px rgb(252, 252, 252);
         }
         
         .solicitar-btn:hover {

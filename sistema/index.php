@@ -167,6 +167,11 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
                 <?php if ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor'): ?>
                     <a href="?vista=rh_periodos" class="solicitar-btn" style="background: #ff0000ff;">RH</a>
                 <?php endif; ?>
+
+                 <!-- Solo mostrar RH para admin y editor -->
+                <?php if ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor'): ?>
+                    <a href="../historial/historial.php" class="solicitar-btn" style="background: #ffbb00ff;">Historial</a>
+                <?php endif; ?>
             </div>
             <?php
         }

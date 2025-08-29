@@ -1,0 +1,230 @@
+* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #a92222, #fdbb2d);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+        }
+        
+        nav {
+            background-color: rgba(242, 242, 242, 0.5);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            width: 100%;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        nav img {
+            height: 50px;
+            border-radius: 25%;
+            border: 1px solid #fff;
+        }
+
+        main {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+            width: 95%;
+            max-width: 1200px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #1a2a6c;
+        }
+
+        .filtros {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+        }
+
+        .filtro-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        select, input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #1a2a6c;
+            color: white;
+            cursor: pointer;
+        }
+
+        th:hover {
+            background-color: #2a3a9c;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: rgba(76, 175, 80, 0.2);
+        }
+
+        .estado {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .pendiente {
+            background-color: #ff9800;
+            color: white;
+        }
+
+        .aprobada {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .rechazada {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            margin: 0 5px;
+            padding: 8px 12px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #777;
+        }
+        /* Media Query para dispositivos móviles y tabla responsive */
+@media screen and (max-width: 768px) {
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    th, td {
+        padding: 8px 10px;
+        font-size: 14px;
+    }
+    
+    .container {
+        padding: 15px;
+        width: 100%;
+    }
+    
+    .filtros {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Estilos específicos para la columna de motivo de rechazo */
+    td:nth-child(7), th:nth-child(7) {
+        min-width: 200px;
+        max-width: 200px;
+        white-space: normal;
+        word-wrap: break-word;
+    }
+    
+    /* Mejorar visualización de estados en móviles */
+    .estado {
+        font-size: 12px;
+        padding: 3px 8px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    td:nth-child(7), th:nth-child(7) {
+        min-width: 150px;
+        max-width: 150px;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    nav ul {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    nav li {
+        margin-bottom: 10px;
+    }
+}
