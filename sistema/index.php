@@ -172,6 +172,9 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
                 <?php if ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor'): ?>
                     <a href="../historial/historial.php" class="solicitar-btn" style="background: #ffbb00ff;">Historial</a>
                 <?php endif; ?>
+                <?php if ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor'): ?>
+                    <a href="../actualizar_datos/actualizar.php" class="solicitar-btn" style="background: #826e6c97;">Dias Especiales</a>
+                <?php endif; ?>
             </div>
             <?php
         }

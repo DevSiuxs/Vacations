@@ -2,4 +2,3 @@ PROYECTO VACACIONES
 API http://localhost/Vacaciones/txt/test_conexion.php
 SISTEMA http://localhost/Vacaciones/?vista=vacaciones
 
-DESGLOCE TABLA 
