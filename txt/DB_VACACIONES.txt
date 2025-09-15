@@ -32,7 +32,7 @@ CREATE TABLE vacaciones (
 --INSERT INTO vacaciones (id_empleado, dias_totales, dias_asignados, dias_disfrutados)
 --VALUES (1, 20, 6, 0);
 
-DROP TABLE solicitudes;
+
 
 CREATE TABLE solicitudes (
     id INT AUTO_INCREMENT PRIMARY KEY,

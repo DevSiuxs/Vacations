@@ -22,6 +22,8 @@ if ($conn->connect_error) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Actualizar Datos de Vacaciones - Preisa</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -204,7 +206,7 @@ if ($conn->connect_error) {
     </style>
 </head>
 <body>
-    <nav>
+   <nav>
         <ul>
             <li>
                 <img src="../Assets/icons/Uranus.ico" alt="Logo Preisa">
@@ -235,7 +237,8 @@ if ($conn->connect_error) {
             <input type="text" id="buscarNombre" placeholder="Buscar por nombre...">
             <select id="filtroPuesto">
                 <option value="">Todos los puestos</option>
-                <option value="OPERADOR FUNERARIO">OPERADOR FUNERARIO</option>
+                <option value="administrativo">Administrativo</option>
+                <option value="operativo">Operativo</option>
                 <!-- Agrega más opciones según los puestos existentes -->
             </select>
             <button onclick="filtrarEmpleados()">Buscar</button>
@@ -303,7 +306,7 @@ if ($conn->connect_error) {
         
         <div class="nav-links">
             <a href="../sistema/index.php">Volver al Inicio</a>
-            <a href="#" onclick="actualizarDisfrutados()">Actualizar Días Disfrutados</a>
+            <!-- <a href="#" onclick="actualizarDisfrutados()">Actualizar Días Disfrutados</a> -->
         </div>
     </div>
     
