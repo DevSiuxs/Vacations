@@ -4,9 +4,16 @@ if (!isset($_SESSION['empleado_id'])) {
     header("Location: ../login.php");
     exit();
 }
-// Configuración de la base de datos
 
-require_once '../db_config.php'; // Archivo con configuración de BDciones";
+// Verificar permisos de usuario
+$tiene_permisos = ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor');
+if (!$tiene_permisos) {
+    header("Location: ../sistema/index.php");
+    exit();
+}
+
+// Configuración de la base de datos
+require_once '../db_config.php';
 
 // Crear conexión
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -22,14 +29,67 @@ if ($conn->connect_error) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Actualizar Datos de Vacaciones - Preisa</title>
-    <link rel="stylesheet" href="../css/actualizar_vacaciones.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
-        /* Estilos adicionales para mejorar la visualización */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        
+        nav {
+            background-color: #0c21e2;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        nav ul li {
+            margin-right: 15px;
+        }
+        
         .container {
             max-width: 1200px;
-            margin: 0 auto;
+            margin: 20px auto;
             padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #0c21e2;
+            margin-bottom: 20px;
+        }
+        
+        .alert {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
         
         .filtro {
@@ -37,7 +97,6 @@ if ($conn->connect_error) {
             gap: 10px;
             margin-bottom: 20px;
             flex-wrap: wrap;
-            align-items: center;
         }
         
         .filtro input, .filtro select {
@@ -55,14 +114,10 @@ if ($conn->connect_error) {
             cursor: pointer;
         }
         
-        .tabla-container {
-            overflow-x: auto;
-            margin-bottom: 20px;
-        }
-        
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-bottom: 20px;
         }
         
         th, td {
@@ -72,8 +127,8 @@ if ($conn->connect_error) {
         }
         
         th {
-            background-color: #0c21e2ff;
-            font-weight: bold;
+            background-color: #0c21e2;
+            color: white;
         }
         
         tr:hover {
@@ -121,39 +176,11 @@ if ($conn->connect_error) {
             color: white;
             text-decoration: none;
             border-radius: 4px;
-            margin-right: 10px;
-        }
-        
-        .alert {
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-        }
-        
-        .alert-error {
-            background-color: #ffebee;
-            color: #c62828;
-            border: 1px solid #ef9a9a;
         }
         
         @media (max-width: 768px) {
             .filtro {
                 flex-direction: column;
-                align-items: stretch;
-            }
-            
-            th, td {
-                padding: 8px 5px;
-                font-size: 14px;
-            }
-            
-            .acciones {
-                display: flex;
-                flex-direction: column;
-            }
-            
-            .btn-editar, .btn-guardar, .btn-cancelar {
-                margin: 2px 0;
             }
         }
     </style>
@@ -162,13 +189,13 @@ if ($conn->connect_error) {
    <nav>
         <ul>
             <li>
-                <img src="../Assets/icons/Uranus.ico" alt="Logo Preisa">
-                <li>
-                    <span style="color: white; padding-left: 0.8rem;"><?php echo $_SESSION['empleado_nombre']; ?> <br><b style="color: Green; padding-left: 0.8rem;"><?php echo $_SESSION['empleado_rol']; ?></b></span>
-                </li>
+                <img src="../Assets/icons/Uranus.ico" alt="Logo Preisa" height="40">
+            </li>
+            <li>
+                <span style="color: white;"><?php echo $_SESSION['empleado_nombre']; ?> <br><b style="color: Green;"><?php echo $_SESSION['empleado_rol']; ?></b></span>
             </li>
             <li style="margin-left: auto;">
-                <a href="../logout.php" style="margin-left:15px; text-decoration:none; font-size:24px; color:red; title:cerrar sesion;"><i class="fas fa-power-off"></i></a>
+                <a href="../logout.php" style="text-decoration:none; font-size:24px; color:red;" title="Cerrar sesión"><i class="fas fa-power-off"></i></a>
             </li>
         </ul>
     </nav>
@@ -178,7 +205,7 @@ if ($conn->connect_error) {
         
         <?php
         if (isset($_GET['success'])) {
-            echo '<div class="alert">' . htmlspecialchars($_GET['success']) . '</div>';
+            echo '<div class="alert alert-success">' . htmlspecialchars($_GET['success']) . '</div>';
         }
         if (isset($_GET['error'])) {
             echo '<div class="alert alert-error">' . htmlspecialchars($_GET['error']) . '</div>';
@@ -193,12 +220,9 @@ if ($conn->connect_error) {
                 <option value="operativo">Operativo</option>
             </select>
             <button onclick="filtrarEmpleados()">Buscar</button>
-            <div class="nav-links">
-            <a href="agregar_solicitud/agregar_solicitud.php">Historial Especiales</a>
-        </div>
         </div>
         
-        <div class="tabla-container">
+        <div style="overflow-x: auto;">
             <table id="tablaVacaciones">
                 <thead>
                     <tr>
@@ -239,7 +263,7 @@ if ($conn->connect_error) {
                                 <td class='editable' data-field='dias_asignados'>{$row['dias_asignados']}</td>
                                 <td class='editable' data-field='dias_disfrutados'>{$row['dias_disfrutados']}</td>
                                 <td>{$row['a_disfrutar']}</td>
-                                <td class='acciones'>
+                                <td>
                                     <button class='btn-editar' onclick='habilitarEdicion(this)'>Editar</button>
                                     <button class='btn-guardar' onclick='confirmarGuardar({$row['id']})' style='display:none;'>Guardar</button>
                                     <button class='btn-cancelar' onclick='cancelarEdicion(this)' style='display:none;'>Cancelar</button>
@@ -262,7 +286,6 @@ if ($conn->connect_error) {
     </div>
     
     <script>
-        // Función para filtrar empleados
         function filtrarEmpleados() {
             const nombre = document.getElementById('buscarNombre').value.toLowerCase();
             const puesto = document.getElementById('filtroPuesto').value;
@@ -298,7 +321,6 @@ if ($conn->connect_error) {
             btnCancelar.style.display = 'inline-block';
         }
         
-        // Función para cancelar la edición
         function cancelarEdicion(boton) {
             const fila = boton.parentNode.parentNode;
             const celdasEditables = fila.querySelectorAll('.editable');
@@ -318,14 +340,12 @@ if ($conn->connect_error) {
             btnCancelar.style.display = 'none';
         }
         
-        // Función para confirmar antes de guardar
         function confirmarGuardar(id) {
             if (confirm('¿Estás seguro de que deseas guardar los cambios?')) {
                 guardarCambios(id);
             }
         }
         
-        // Función para guardar cambios
         function guardarCambios(id) {
             const fila = document.querySelector(`tr[data-id="${id}"]`);
             const celdasEditables = fila.querySelectorAll('.editable');
@@ -391,23 +411,6 @@ if ($conn->connect_error) {
             });
         }
         
-        // Función para actualizar días disfrutados
-        function actualizarDisfrutados() {
-            if (confirm('¿Estás seguro de que deseas actualizar los días disfrutados? Esto procesará todas las solicitudes aprobadas cuya fecha de inicio ya haya pasado.')) {
-                fetch('actualizar_disfrutados.php')
-                .then(response => response.text())
-                .then(data => {
-                    alert('Días disfrutados actualizados correctamente');
-                    location.reload();
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al actualizar los días disfrutados');
-                });
-            }
-        }
-        
-        // Permitir búsqueda al presionar Enter
         document.getElementById('buscarNombre').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 filtrarEmpleados();

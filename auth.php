@@ -106,99 +106,118 @@ function inicializarVacaciones($conn, $empleado_id, $puesto = null, $fecha_ingre
         }
     }
     
-    // Calcular años de antigüedad
-    $hoy = new DateTime();
-    $ingreso = new DateTime($fecha_ingreso);
-    $antiguedad = $ingreso->diff($hoy)->y;
-    
-    // Determinar días según puesto y antigüedad
-    $dias_totales = 0;
-    $dias_asignados = 0;
-    
-    if ($puesto === 'administrativo') {
-        if ($antiguedad == 1) {
-            $dias_totales = 12;
-            $dias_asignados = 12;
-        } elseif ($antiguedad == 2) {
-            $dias_totales = 14;
-            $dias_asignados = 12;
-        } elseif ($antiguedad == 3) {
-            $dias_totales = 16;
-            $dias_asignados = 12;
-        } elseif ($antiguedad == 4) {
-            $dias_totales = 18;
-            $dias_asignados = 16;
-        } elseif ($antiguedad == 5) {
-            $dias_totales = 20;
-            $dias_asignados = 15;
-        } elseif ($antiguedad >= 6 && $antiguedad <= 10) {
-            $dias_totales = 22;
-            $dias_asignados = 17;
-        } elseif ($antiguedad >= 11 && $antiguedad <= 15) {
-            $dias_totales = 24;
-            $dias_asignados = 19;
-        } elseif ($antiguedad >= 16 && $antiguedad <= 20) {
-            $dias_totales = 26;
-            $dias_asignados = 21;
-        } elseif ($antiguedad >= 21 && $antiguedad <= 25) {
-            $dias_totales = 28;
-            $dias_asignados = 22;
-        } elseif ($antiguedad >= 26) {
-            $dias_totales = 30;
-            $dias_asignados = 22;
-        }
-    } elseif ($puesto === 'operativo') {
-        if ($antiguedad == 1) {
-            $dias_totales = 12;
-            $dias_asignados = 10;
-        } elseif ($antiguedad == 2) {
-            $dias_totales = 14;
-            $dias_asignados = 10;
-        } elseif ($antiguedad == 3) {
-            $dias_totales = 16;
-            $dias_asignados = 10;
-        } elseif ($antiguedad == 4) {
-            $dias_totales = 18;
-            $dias_asignados = 10;
-        } elseif ($antiguedad == 5) {
-            $dias_totales = 20;
-            $dias_asignados = 10;
-        } elseif ($antiguedad >= 6 && $antiguedad <= 10) {
-            $dias_totales = 22;
-            $dias_asignados = 10;
-        } elseif ($antiguedad >= 11 && $antiguedad <= 15) {
-            $dias_totales = 24;
-            $dias_asignados = 10;
-        } elseif ($antiguedad >= 16 && $antiguedad <= 20) {
-            $dias_totales = 26;
-            $dias_asignados = 10;
-        } elseif ($antiguedad >= 21 && $antiguedad <= 25) {
-            $dias_totales = 28;
-            $dias_asignados = 10;
-        } elseif ($antiguedad >= 26) {
-            $dias_totales = 30;
-            $dias_asignados = 10;
-        }
-    }
-    
-    // Verificar si ya existe registro
-    $check = $conn->prepare("SELECT id FROM vacaciones WHERE id_empleado = ?");
+    // Verificar si ya existe registro y si tiene datos
+    $check = $conn->prepare("SELECT id, dias_totales, dias_asignados, dias_disfrutados FROM vacaciones WHERE id_empleado = ?");
     $check->bind_param("i", $empleado_id);
     $check->execute();
+    $check_result = $check->get_result();
     
-    if ($check->get_result()->num_rows > 0) {
-        // Actualizar existente
-        $stmt = $conn->prepare("UPDATE vacaciones SET dias_totales = ?, dias_asignados = ? WHERE id_empleado = ?");
-        $stmt->bind_param("iii", $dias_totales, $dias_asignados, $empleado_id);
+    if ($check_result->num_rows > 0) {
+        $vacaciones = $check_result->fetch_assoc();
+        
+        // Si ya existe registro y tiene valores diferentes de cero, no hacer nada
+        if ($vacaciones['dias_totales'] > 0 || $vacaciones['dias_asignados'] > 0 || $vacaciones['dias_disfrutados'] > 0) {
+            return true; // Ya tiene datos, no sobrescribir
+        }
+        
+        // Si existe pero todos los valores son cero, calcular nuevos valores
+        $calcular_nuevos = true;
     } else {
-        // Crear nuevo
-        $dias_disfrutados = 0;
-        $stmt = $conn->prepare("INSERT INTO vacaciones (id_empleado, dias_totales, dias_asignados, dias_disfrutados) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("iiii", $empleado_id, $dias_totales, $dias_asignados, $dias_disfrutados);
+        // No existe registro, crear uno nuevo
+        $calcular_nuevos = true;
     }
     
-    return $stmt->execute();
+    if ($calcular_nuevos) {
+        // Calcular años de antigüedad
+        $hoy = new DateTime();
+        $ingreso = new DateTime($fecha_ingreso);
+        $antiguedad = $ingreso->diff($hoy)->y;
+        
+        // Determinar días según puesto y antigüedad
+        $dias_totales = 0;
+        $dias_asignados = 0;
+        $dias_disfrutados = 0;
+        
+        if ($puesto === 'administrativo') {
+            if ($antiguedad == 1) {
+                $dias_totales = 12;
+                $dias_asignados = 12;
+            } elseif ($antiguedad == 2) {
+                $dias_totales = 14;
+                $dias_asignados = 12;
+            } elseif ($antiguedad == 3) {
+                $dias_totales = 16;
+                $dias_asignados = 12;
+            } elseif ($antiguedad == 4) {
+                $dias_totales = 18;
+                $dias_asignados = 16;
+            } elseif ($antiguedad == 5) {
+                $dias_totales = 20;
+                $dias_asignados = 15;
+            } elseif ($antiguedad >= 6 && $antiguedad <= 10) {
+                $dias_totales = 22;
+                $dias_asignados = 17;
+            } elseif ($antiguedad >= 11 && $antiguedad <= 15) {
+                $dias_totales = 24;
+                $dias_asignados = 19;
+            } elseif ($antiguedad >= 16 && $antiguedad <= 20) {
+                $dias_totales = 26;
+                $dias_asignados = 21;
+            } elseif ($antiguedad >= 21 && $antiguedad <= 25) {
+                $dias_totales = 28;
+                $dias_asignados = 22;
+            } elseif ($antiguedad >= 26) {
+                $dias_totales = 30;
+                $dias_asignados = 22;
+            }
+        } elseif ($puesto === 'operativo') {
+            if ($antiguedad == 1) {
+                $dias_totales = 12;
+                $dias_asignados = 10;
+            } elseif ($antiguedad == 2) {
+                $dias_totales = 14;
+                $dias_asignados = 10;
+            } elseif ($antiguedad == 3) {
+                $dias_totales = 16;
+                $dias_asignados = 10;
+            } elseif ($antiguedad == 4) {
+                $dias_totales = 18;
+                $dias_asignados = 10;
+            } elseif ($antiguedad == 5) {
+                $dias_totales = 20;
+                $dias_asignados = 10;
+            } elseif ($antiguedad >= 6 && $antiguedad <= 10) {
+                $dias_totales = 22;
+                $dias_asignados = 10;
+            } elseif ($antiguedad >= 11 && $antiguedad <= 15) {
+                $dias_totales = 24;
+                $dias_asignados = 10;
+            } elseif ($antiguedad >= 16 && $antiguedad <= 20) {
+                $dias_totales = 26;
+                $dias_asignados = 10;
+            } elseif ($antiguedad >= 21 && $antiguedad <= 25) {
+                $dias_totales = 28;
+                $dias_asignados = 10;
+            } elseif ($antiguedad >= 26) {
+                $dias_totales = 30;
+                $dias_asignados = 10;
+            }
+        }
+        
+        if (isset($vacaciones)) {
+            // Actualizar existente (solo si todos los valores eran cero)
+            $stmt = $conn->prepare("UPDATE vacaciones SET dias_totales = ?, dias_asignados = ?, dias_disfrutados = ? WHERE id_empleado = ?");
+            $stmt->bind_param("iiii", $dias_totales, $dias_asignados, $dias_disfrutados, $empleado_id);
+        } else {
+            // Crear nuevo
+            $stmt = $conn->prepare("INSERT INTO vacaciones (id_empleado, dias_totales, dias_asignados, dias_disfrutados) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("iiii", $empleado_id, $dias_totales, $dias_asignados, $dias_disfrutados);
+        }
+        
+        return $stmt->execute();
+    }
+    
+    return true;
 }
-
 header("Location: login.php");
 exit();

@@ -1,22 +1,37 @@
 <?php
 session_start();
 if (!isset($_SESSION['empleado_id']) || ($_SESSION['empleado_rol'] !== 'admin' && $_SESSION['empleado_rol'] !== 'editor')) {
-    header("Location: ../login.php");
+    echo json_encode(['success' => false, 'error' => 'No tiene permisos para realizar esta acción']);
     exit();
 }
 
+// Habilitar reporte de errores para depuración
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 header('Content-Type: application/json');
 
+// Incluir configuración de base de datos
 require_once '../db_config.php';
 
+// Crear conexión
 $conn = new mysqli($servername, $username, $password, $dbname);
 
+// Verificar conexión
 if ($conn->connect_error) {
     echo json_encode(['success' => false, 'error' => "Conexión fallida: " . $conn->connect_error]);
     exit();
 }
 
-$input = json_decode(file_get_contents('php://input'), true);
+// Obtener datos JSON
+$json = file_get_contents('php://input');
+$input = json_decode($json, true);
+
+// Verificar si hay error en el JSON
+if (json_last_error() !== JSON_ERROR_NONE) {
+    echo json_encode(['success' => false, 'error' => 'JSON inválido: ' . json_last_error_msg()]);
+    exit();
+}
 
 // Verificar si los datos están completos
 if (!$input || !isset($input['id']) || !isset($input['dias_totales']) || !isset($input['dias_asignados']) || !isset($input['dias_disfrutados'])) {
@@ -41,35 +56,58 @@ if (($dias_asignados + $dias_disfrutados) > $dias_totales) {
     exit();
 }
 
-// Verificar si el empleado existe
-$check_sql = "SELECT id FROM empleados WHERE id = ?";
+// Verificar si existe el registro en la tabla vacaciones
+$check_sql = "SELECT id FROM vacaciones WHERE id_empleado = ?";
 $check_stmt = $conn->prepare($check_sql);
+if (!$check_stmt) {
+    echo json_encode(['success' => false, 'error' => 'Error en la preparación de la consulta: ' . $conn->error]);
+    exit();
+}
+
 $check_stmt->bind_param("i", $id);
-$check_stmt->execute();
+if (!$check_stmt->execute()) {
+    echo json_encode(['success' => false, 'error' => 'Error al ejecutar la consulta: ' . $check_stmt->error]);
+    $check_stmt->close();
+    exit();
+}
+
 $check_result = $check_stmt->get_result();
 
 if ($check_result->num_rows === 0) {
-    echo json_encode(['success' => false, 'error' => 'Empleado no encontrado']);
-    $check_stmt->close();
-    $conn->close();
-    exit();
+    // Si no existe, insertar en lugar de actualizar
+    $sql = "INSERT INTO vacaciones (id_empleado, dias_totales, dias_asignados, dias_disfrutados) 
+            VALUES (?, ?, ?, ?)";
+} else {
+    // Si existe, actualizar
+    $sql = "UPDATE vacaciones SET 
+            dias_totales = ?,
+            dias_asignados = ?,
+            dias_disfrutados = ?
+            WHERE id_empleado = ?";
 }
+
 $check_stmt->close();
 
-// Actualizar datos en la base de datos
-$sql = "UPDATE vacaciones SET 
-        dias_totales = ?,
-        dias_asignados = ?,
-        dias_disfrutados = ?
-        WHERE id_empleado = ?";
-
+// Preparar la consulta
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("iiii", $dias_totales, $dias_asignados, $dias_disfrutados, $id);
+if (!$stmt) {
+    echo json_encode(['success' => false, 'error' => 'Error en la preparación de la consulta: ' . $conn->error]);
+    exit();
+}
+
+// Ejecutar la consulta
+if ($check_result->num_rows === 0) {
+    // Para INSERT
+    $stmt->bind_param("iiii", $id, $dias_totales, $dias_asignados, $dias_disfrutados);
+} else {
+    // Para UPDATE
+    $stmt->bind_param("iiii", $dias_totales, $dias_asignados, $dias_disfrutados, $id);
+}
 
 if ($stmt->execute()) {
     echo json_encode(['success' => true]);
 } else {
-    echo json_encode(['success' => false, 'error' => $conn->error]);
+    echo json_encode(['success' => false, 'error' => 'Error al ejecutar la consulta: ' . $stmt->error]);
 }
 
 $stmt->close();
