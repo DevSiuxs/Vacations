@@ -31,34 +31,43 @@ if ($conn->connect_error) {
     <title>Actualizar Datos de Vacaciones - Preisa</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-        }
-        
-        nav {
-            background-color: #0c21e2;
-            color: white;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            align-items: center;
-        }
-        
-        nav ul li {
-            margin-right: 15px;
-        }
-        
+        * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #1a2a6c, #a92222, #fdbb2d);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: #333;
+}
+
+nav {
+  background-color: #f2f2f280;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+nav ul {
+  display: flex;
+  list-style: none;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
+nav img {
+  height: 50px;
+  border-radius: 25%;
+  border: 1px solid #fff;
+}
         .container {
             max-width: 1200px;
             margin: 20px auto;
@@ -220,6 +229,10 @@ if ($conn->connect_error) {
                 <option value="operativo">Operativo</option>
             </select>
             <button onclick="filtrarEmpleados()">Buscar</button>
+             <div class="nav-links">
+            <a href="agregar_solicitud/agregar_solicitud.php">Historial Especiales <b> (Dias Pasados)</b></a>
+        </div>
+            
         </div>
         
         <div style="overflow-x: auto;">

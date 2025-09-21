@@ -162,30 +162,48 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
                 </div>
                 
                <div class="roles-buttons">
-                <a href="?vista=solicitud" class="role-btn" style="background: #00ff00ff;">Solicitar Vacaciones</a>
-                <a href="?vista=disponibilidad" class="role-btn" style="background: linear-gradient(to right, #00f7ffff, #4a00e0);">Ver Disponibilidad</a>
-        <!-- Solo mostrar RH para admin y editor -->
-        <?php if ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor'): ?>
-            <a href="?vista=rh_periodos" class="role-btn" style="background: #ff0000ff;">RH</a>
-        <?php endif; ?>
+       <a href="?vista=solicitud" class="role-btn" style="background: #00ff00ff;">
+    <i class="fas fa-umbrella-beach fa-bounce" style="--fa-animation-duration: 2s;"></i> Solicitar Vacaciones
+</a>
+<a href="?vista=disponibilidad" class="role-btn" style="background: linear-gradient(to right, #00f7ffff, #4a00e0);">
+    <i class="fas fa-calendar-check fa-shake" style="--fa-animation-duration: 5s;"></i> Ver Disponibilidad
+</a>
 
-        <!-- Solo mostrar Historial para admin y editor -->
-        <?php if ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor'): ?>
-            <a href="../historial/historial.php" class="role-btn" style="background: #ffbb00ff;">Historial</a>
-        <?php endif; ?>
-        
-        <!-- Solo mostrar Días Especiales para admin y editor -->
-        <?php if ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor'): ?>
-            <a href="../actualizar_datos/actualizar.php" class="role-btn" style="background: #826e6c97;">Dias Especiales</a>
-        <?php endif; ?>
+<!-- Solo mostrar RH para admin y editor -->
+<?php if ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor'): ?>
+    <a href="?vista=rh_periodos" class="role-btn" style="background: #ff0000ff;">
+        <i class="fas fa-users-cog fa-shake" style="--fa-animation-duration: 8s;"></i> RH
+    </a>
+<?php endif; ?>
 
-        <?php if ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor'): ?>
-            <a href="../eliminar_usuarios/eliminar.php" class="role-btn" style="background: #8000ff97;">Eliminar Usuarios</a>
-        <?php endif; ?>
+<!-- Solo mostrar Historial para admin y editor -->
+<?php if ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor'): ?>
+    <a href="../historial/historial.php" class="role-btn" style="background: #ffbb00ff;">
+        <i class="fas fa-history fa-spin" style="--fa-animation-duration: 5s;"></i> Historial
+    </a>
+<?php endif; ?>
 
-        <?php if ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor'): ?>
-            <a href="../roles/roles.php" class="role-btn" style="background: #000000;">Log-in Roles</a>
-        <?php endif; ?>
+<!-- Solo mostrar Días Especiales para admin y editor -->
+<?php if ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor'): ?>
+    <a href="../actualizar_datos/actualizar.php" class="role-btn" style="background: #826e6c97;">
+        <i class="fas fa-calendar fa-beat" style="--fa-animation-duration: 2s;"></i> Dias Especiales
+    </a>
+<?php endif; ?>
+
+<?php if ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor'): ?>
+    <a href="../eliminar_usuarios/eliminar.php" class="role-btn" style="background: #8000ff97;">
+        <i class="fas fa-user-times fa-fade" style="--fa-animation-duration: 2s;"></i> Eliminar Usuarios
+    </a>
+<?php endif; ?>
+
+<?php if ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor'): ?>
+    <a href="../roles/roles.php" class="role-btn" style="background: #000000;">
+        <i class="fas fa-user-shield fa-beat-fade" style="--fa-animation-duration: 3s;"></i> Log-in Roles
+    </a>
+<?php endif; ?>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
     </div>
             </div>
             <?php
