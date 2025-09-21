@@ -1,22 +1,12 @@
 CREATE DATABASE IF NOT EXISTS PreisaVacaciones;
-USE PreisaVacaciones;
-DROP TABLE empleados
-
--- Tabla de empleados
 CREATE TABLE empleados (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     password VARCHAR(255) NOT NULL,
     puesto VARCHAR(100) NOT NULL,
-    fecha_ingreso DATE NOT NULL
-    rol ENUM('admin', 'editor', 'usuario') NOT NULL DEFAULT 'usuario';
+    fecha_ingreso DATE NOT NULL,
+    rol ENUM('admin', 'editor', 'usuario') NOT NULL DEFAULT 'usuario'
 );
-
--- Insertar datos de prueba
---INSERT INTO empleados (nombre, puesto, fecha_ingreso) VALUES 
---('Juan Perez', 'OPERADOR FUNERARIO', '2021-03-15');
-
-
 
 CREATE TABLE vacaciones (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -28,12 +18,6 @@ CREATE TABLE vacaciones (
     ON DELETE CASCADE
 );
 
--- Luego inserta de nuevo tus datos
---INSERT INTO vacaciones (id_empleado, dias_totales, dias_asignados, dias_disfrutados)
---VALUES (1, 20, 6, 0);
-
-
-
 CREATE TABLE solicitudes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_empleado INT NOT NULL,
@@ -42,9 +26,9 @@ CREATE TABLE solicitudes (
     dias_solicitados INT NOT NULL,
     estado ENUM('pendiente', 'aprobada', 'rechazada') DEFAULT 'pendiente',
     fecha_aprobacion DATETIME NULL,
-    FOREIGN KEY (id_empleado) REFERENCES empleados(id)
-    
+    FOREIGN KEY (id_empleado) REFERENCES empleados(id)  
 );
+
 CREATE TABLE rechazos_vacaciones (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_solicitud INT NOT NULL,
@@ -52,9 +36,10 @@ CREATE TABLE rechazos_vacaciones (
     fecha_rechazo DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_solicitud) REFERENCES solicitudes(id)
 );
+
 CREATE TABLE vacaciones_disfrutadas (
      id INT AUTO_INCREMENT PRIMARY KEY,
      id_solicitud INT NOT NULL,
      fecha_procesamiento DATETIME NOT NULL,
      FOREIGN KEY (id_solicitud) REFERENCES solicitudes(id)
- );
+);

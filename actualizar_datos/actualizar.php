@@ -22,186 +22,139 @@ if ($conn->connect_error) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Actualizar Datos de Vacaciones - Preisa</title>
-
+    <link rel="stylesheet" href="../css/actualizar_vacaciones.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #1a2a6c, #a92222, #fdbb2d);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            color: #333;
-        }
-        
-        nav {
-            background-color: rgba(255, 255, 255, 0.2);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-        
-        nav ul {
-            display: flex;
-            list-style: none;
-            width: 100%;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        nav img {
-            height: 50px;
-            border-radius: 25%;
-            border: 1px solid #fff;
-        }
-        
+        /* Estilos adicionales para mejorar la visualización */
         .container {
             max-width: 1200px;
-            margin: 20px auto;
+            margin: 0 auto;
             padding: 20px;
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-        }
-        
-        h1, h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #1a2a6c;
         }
         
         .filtro {
             display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
             gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
         }
         
         .filtro input, .filtro select {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            width: 250px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
         
         .filtro button {
-            padding: 10px 15px;
-            background-color: #1a2a6c;
+            padding: 8px 16px;
+            background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
-        }
-        
-        .filtro button:hover {
-            background-color: #2a3a9c;
         }
         
         .tabla-container {
             overflow-x: auto;
+            margin-bottom: 20px;
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
         }
         
         th, td {
-            padding: 12px 15px;
+            padding: 12px 8px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
         
         th {
-            background-color: #f0f0f0;
-            position: sticky;
-            top: 0;
+            background-color: #0c21e2ff;
+            font-weight: bold;
         }
         
         tr:hover {
-            background-color: rgba(76, 175, 80, 0.1);
+            background-color: #f5f5f5;
         }
         
-        .acciones {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .btn-editar {
-            padding: 5px 10px;
-            background-color: #45a049;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-        
-        .btn-guardar {
-            padding: 5px 10px;
-            background-color: #1a2a6c;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-        
-        .btn-cancelar {
-            padding: 5px 10px;
-            background-color: #a92222;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-        
-        input[type="number"] {
+        .editable input {
             width: 60px;
             padding: 5px;
             border: 1px solid #ccc;
             border-radius: 3px;
         }
         
-        .alert {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            background-color: rgba(76, 175, 80, 0.4);
-            color: #155724;
-            border: 1px solid #c3e6cb;
+        .btn-editar, .btn-guardar, .btn-cancelar {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 2px;
         }
         
-        .alert-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border-color: #f5c6cb;
+        .btn-editar {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .btn-guardar {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .btn-cancelar {
+            background-color: #f44336;
+            color: white;
         }
         
         .nav-links {
-            display: flex;
-            gap: 15px;
             margin-top: 20px;
-            justify-content: center;
         }
         
         .nav-links a {
+            display: inline-block;
             padding: 10px 15px;
-            background-color: #1a2a6c;
+            background-color: #2196F3;
             color: white;
             text-decoration: none;
-            border-radius: 5px;
+            border-radius: 4px;
+            margin-right: 10px;
         }
         
-        .nav-links a:hover {
-            background-color: #2a3a9c;
+        .alert {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        
+        .alert-error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+        
+        @media (max-width: 768px) {
+            .filtro {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            th, td {
+                padding: 8px 5px;
+                font-size: 14px;
+            }
+            
+            .acciones {
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .btn-editar, .btn-guardar, .btn-cancelar {
+                margin: 2px 0;
+            }
         }
     </style>
 </head>
@@ -224,7 +177,6 @@ if ($conn->connect_error) {
         <h1>ACTUALIZAR DATOS DE VACACIONES</h1>
         
         <?php
-        // Mostrar mensajes de éxito o error
         if (isset($_GET['success'])) {
             echo '<div class="alert">' . htmlspecialchars($_GET['success']) . '</div>';
         }
@@ -234,21 +186,22 @@ if ($conn->connect_error) {
         ?>
         
         <div class="filtro">
-            <input type="text" id="buscarNombre" placeholder="Buscar por nombre...">
+            <input type="text" id="buscarNombre" placeholder="Buscar por nombre">
             <select id="filtroPuesto">
                 <option value="">Todos los puestos</option>
                 <option value="administrativo">Administrativo</option>
                 <option value="operativo">Operativo</option>
-                <!-- Agrega más opciones según los puestos existentes -->
             </select>
             <button onclick="filtrarEmpleados()">Buscar</button>
+            <div class="nav-links">
+            <a href="agregar_solicitud/agregar_solicitud.php">Historial Especiales</a>
+        </div>
         </div>
         
         <div class="tabla-container">
             <table id="tablaVacaciones">
                 <thead>
                     <tr>
-                        <th>ID</th>
                         <th>Nombre</th>
                         <th>Puesto</th>
                         <th>Días Totales</th>
@@ -280,7 +233,6 @@ if ($conn->connect_error) {
                     if ($result->num_rows > 0) {
                         while($row = $result->fetch_assoc()) {
                             echo "<tr data-id='{$row['id']}'>
-                                <td>{$row['id']}</td>
                                 <td>{$row['nombre']}</td>
                                 <td>{$row['puesto']}</td>
                                 <td class='editable' data-field='dias_totales'>{$row['dias_totales']}</td>
@@ -289,13 +241,13 @@ if ($conn->connect_error) {
                                 <td>{$row['a_disfrutar']}</td>
                                 <td class='acciones'>
                                     <button class='btn-editar' onclick='habilitarEdicion(this)'>Editar</button>
-                                    <button class='btn-guardar' onclick='guardarCambios({$row['id']})' style='display:none;'>Guardar</button>
+                                    <button class='btn-guardar' onclick='confirmarGuardar({$row['id']})' style='display:none;'>Guardar</button>
                                     <button class='btn-cancelar' onclick='cancelarEdicion(this)' style='display:none;'>Cancelar</button>
                                 </td>
                             </tr>";
                         }
                     } else {
-                        echo "<tr><td colspan='8'>No se encontraron registros</td></tr>";
+                        echo "<tr><td colspan='7'>No se encontraron registros</td></tr>";
                     }
                     
                     $conn->close();
@@ -306,7 +258,6 @@ if ($conn->connect_error) {
         
         <div class="nav-links">
             <a href="../sistema/index.php">Volver al Inicio</a>
-            <!-- <a href="#" onclick="actualizarDisfrutados()">Actualizar Días Disfrutados</a> -->
         </div>
     </div>
     
@@ -318,8 +269,8 @@ if ($conn->connect_error) {
             const filas = document.querySelectorAll('#tablaVacaciones tbody tr');
             
             filas.forEach(fila => {
-                const nombreEmpleado = fila.cells[1].textContent.toLowerCase();
-                const puestoEmpleado = fila.cells[2].textContent;
+                const nombreEmpleado = fila.cells[0].textContent.toLowerCase();
+                const puestoEmpleado = fila.cells[1].textContent;
                 
                 const coincideNombre = nombre === '' || nombreEmpleado.includes(nombre);
                 const coincidePuesto = puesto === '' || puestoEmpleado === puesto;
@@ -328,7 +279,6 @@ if ($conn->connect_error) {
             });
         }
         
-        // Función para habilitar la edición
         function habilitarEdicion(boton) {
             const fila = boton.parentNode.parentNode;
             const celdasEditables = fila.querySelectorAll('.editable');
@@ -368,6 +318,13 @@ if ($conn->connect_error) {
             btnCancelar.style.display = 'none';
         }
         
+        // Función para confirmar antes de guardar
+        function confirmarGuardar(id) {
+            if (confirm('¿Estás seguro de que deseas guardar los cambios?')) {
+                guardarCambios(id);
+            }
+        }
+        
         // Función para guardar cambios
         function guardarCambios(id) {
             const fila = document.querySelector(`tr[data-id="${id}"]`);
@@ -383,6 +340,17 @@ if ($conn->connect_error) {
                 const valor = celda.querySelector('input').value;
                 datos[campo] = valor;
             });
+            
+            // Validar que los días a disfrutar no sean negativos
+            const diasTotales = parseInt(datos.dias_totales);
+            const diasAsignados = parseInt(datos.dias_asignados);
+            const diasDisfrutados = parseInt(datos.dias_disfrutados);
+            const aDisfrutar = diasTotales - diasAsignados - diasDisfrutados;
+            
+            if (aDisfrutar < 0) {
+                alert('Error: Los días a disfrutar no pueden ser negativos. Revise los valores.');
+                return;
+            }
             
             // Enviar datos al servidor
             fetch('actualizar_vacaciones.php', {
@@ -403,11 +371,7 @@ if ($conn->connect_error) {
                     });
                     
                     // Recalcular "A Disfrutar"
-                    const diasTotales = parseInt(datos.dias_totales);
-                    const diasAsignados = parseInt(datos.dias_asignados);
-                    const diasDisfrutados = parseInt(datos.dias_disfrutados);
-                    const aDisfrutar = diasTotales - diasAsignados - diasDisfrutados;
-                    fila.cells[6].textContent = aDisfrutar;
+                    fila.cells[5].textContent = aDisfrutar;
                     
                     // Mostrar/ocultar botones
                     btnEditar.style.display = 'inline-block';

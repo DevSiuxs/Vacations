@@ -65,7 +65,7 @@
             gap: 15px;
             margin-bottom: 20px;
             padding: 15px;
-            background-color: #f0f0f0;
+            background-color: #f2f2f2;
             border-radius: 8px;
         }
 
@@ -81,7 +81,7 @@
 
         select, input {
             padding: 10px;
-            border: 1px solid #ddd;
+            border: 1px solid #0033ff;
             border-radius: 5px;
             font-size: 14px;
         }
@@ -114,7 +114,7 @@
         }
 
         th {
-            background-color: #1a2a6c;
+            background-color: #0022ff !important;
             color: white;
             cursor: pointer;
         }
@@ -171,41 +171,54 @@
             font-style: italic;
             color: #777;
         }
-        /* Media Query para dispositivos móviles y tabla responsive */
+        
 @media screen and (max-width: 768px) {
-    table {
-        display: block;
+    .container {
         overflow-x: auto;
-        white-space: nowrap;
-        -webkit-overflow-scrolling: touch;
+        padding: 10px;
+    }
+    
+    table {
+        width: 100%;
+        min-width: 700px; /* Ancho mínimo para mantener legibilidad */
+        font-size: 14px;
     }
     
     th, td {
         padding: 8px 10px;
-        font-size: 14px;
+        white-space: nowrap;
     }
     
-    .container {
-        padding: 15px;
-        width: 100%;
+    /* Columnas específicas con comportamiento diferente */
+    td:nth-child(1), th:nth-child(1) { /* Empleado */
+        position: sticky;
+        left: 0;
+        background-color: #f8f9fa;
+        z-index: 1;
+        min-width: 120px;
     }
     
-    .filtros {
-        grid-template-columns: 1fr;
-    }
-    
-    /* Estilos específicos para la columna de motivo de rechazo */
-    td:nth-child(7), th:nth-child(7) {
-        min-width: 200px;
-        max-width: 200px;
+    td:nth-child(7), th:nth-child(7) { /* Motivo Rechazo */
+        min-width: 150px;
+        max-width: 150px;
         white-space: normal;
         word-wrap: break-word;
     }
     
-    /* Mejorar visualización de estados en móviles */
+    /* Mejorar visualización de estados */
     .estado {
         font-size: 12px;
         padding: 3px 8px;
+    }
+    
+    /* Ajustar filtros */
+    .filtros {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
     }
 }
 
@@ -219,12 +232,4 @@
         font-size: 1.5rem;
     }
     
-    nav ul {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    nav li {
-        margin-bottom: 10px;
-    }
 }

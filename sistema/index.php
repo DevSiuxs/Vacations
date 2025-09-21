@@ -72,8 +72,9 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Vacaciones - Preisa</title>
     <link rel="stylesheet" href="../css/vacaciones.css">
+    <!-- SOLICITUDES PENDIENTES -->
     <link rel="stylesheet" href="../css/pending.css">
-    <!-- ver_dias_ocupados -->
+    <!-- ver_dias_ocupados  CALENDARIO-->
      <link rel="stylesheet" href="../css/ver_dias_ocupados.css">
     <!-- cancelacion_motivo -->
      <link rel="stylesheet" href="../css/cancelacion_motivo.css">
@@ -160,21 +161,32 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
                     </div>
                 </div>
                 
-                 <a href="?vista=solicitud" class="solicitar-btn">Solicitar Vacaciones</a>
-                <a href="?vista=disponibilidad" class="solicitar-btn" style="background: linear-gradient(to right, #8e2de2, #4a00e0);">Ver Disponibilidad</a>
-                
-                <!-- Solo mostrar RH para admin y editor -->
-                <?php if ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor'): ?>
-                    <a href="?vista=rh_periodos" class="solicitar-btn" style="background: #ff0000ff;">RH</a>
-                <?php endif; ?>
+               <div class="roles-buttons">
+                <a href="?vista=solicitud" class="role-btn" style="background: #00ff00ff;">Solicitar Vacaciones</a>
+                <a href="?vista=disponibilidad" class="role-btn" style="background: linear-gradient(to right, #00f7ffff, #4a00e0);">Ver Disponibilidad</a>
+        <!-- Solo mostrar RH para admin y editor -->
+        <?php if ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor'): ?>
+            <a href="?vista=rh_periodos" class="role-btn" style="background: #ff0000ff;">RH</a>
+        <?php endif; ?>
 
-                 <!-- Solo mostrar RH para admin y editor -->
-                <?php if ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor'): ?>
-                    <a href="../historial/historial.php" class="solicitar-btn" style="background: #ffbb00ff;">Historial</a>
-                <?php endif; ?>
-                <?php if ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor'): ?>
-                    <a href="../actualizar_datos/actualizar.php" class="solicitar-btn" style="background: #826e6c97;">Dias Especiales</a>
-                <?php endif; ?>
+        <!-- Solo mostrar Historial para admin y editor -->
+        <?php if ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor'): ?>
+            <a href="../historial/historial.php" class="role-btn" style="background: #ffbb00ff;">Historial</a>
+        <?php endif; ?>
+        
+        <!-- Solo mostrar Días Especiales para admin y editor -->
+        <?php if ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor'): ?>
+            <a href="../actualizar_datos/actualizar.php" class="role-btn" style="background: #826e6c97;">Dias Especiales</a>
+        <?php endif; ?>
+
+        <?php if ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor'): ?>
+            <a href="../eliminar_usuarios/eliminar.php" class="role-btn" style="background: #8000ff97;">Eliminar Usuarios</a>
+        <?php endif; ?>
+
+        <?php if ($_SESSION['empleado_rol'] === 'admin' || $_SESSION['empleado_rol'] === 'editor'): ?>
+            <a href="../roles/roles.php" class="role-btn" style="background: #000000;">Log-in Roles</a>
+        <?php endif; ?>
+    </div>
             </div>
             <?php
         }

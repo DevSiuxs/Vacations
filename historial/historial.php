@@ -24,7 +24,7 @@ if ($conn->connect_error) {
     <title>Historial de Solicitudes</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/historial.css">
-    <link rel="stylesheet" href="../css/vacaciones.css">
+<link rel="stylesheet" href="../css/actualizar_vacaciones.css">
 </head>
 <body>
     <nav>
@@ -158,7 +158,9 @@ if ($conn->connect_error) {
                 </table>
             </div>
         </div>
-        <a href="../sistema/index.php" class="solicitar-btn" style="background: #ff0000ff;">Regresar</a>
+        <div class="nav-links">
+            <a href="../sistema/index.php">Volver al Inicio</a>
+        </div>
     </main>
 
     <script>

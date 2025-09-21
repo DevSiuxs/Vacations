@@ -7,10 +7,8 @@ if (!isset($_SESSION['empleado_id']) || ($_SESSION['empleado_rol'] !== 'admin' &
 
 header('Content-Type: application/json');
 
-// Configuración de la base de datos
 require_once '../db_config.php';
 
-// Crear conexión
 $conn = new mysqli($servername, $username, $password, $dbname);
 
 if ($conn->connect_error) {
