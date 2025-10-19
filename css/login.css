@@ -6,8 +6,8 @@
 }
 
 body {
-    background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
-    height: 100vh;
+    background: #1e1e1e;
+    height: 120vh;
     display: flex;
     justify-content: center;
     align-items: center;

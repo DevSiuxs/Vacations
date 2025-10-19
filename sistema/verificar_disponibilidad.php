@@ -1,48 +1,60 @@
 <?php
 session_start();
-header('Content-Type: application/json');
+require_once '../db_config.php';
 
-// Configuración de la base de datos
-require_once '../db_config.php'; // Archivo con configuración de BD
-
-// Crear conexión
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Verificar conexión
 if ($conn->connect_error) {
-    echo json_encode(['disponible' => true, 'error' => "Conexión fallida"]); // En caso de error, permitir
+    die(json_encode(['disponible' => false, 'mensaje' => 'Error de conexión']));
+}
+
+$fecha_inicio = $_POST['inicio'];
+$fecha_fin = $_POST['fin'];
+$id_empleado = $_SESSION['empleado_id'];
+
+// Obtener el puesto del empleado actual desde la tabla empleados
+$sql_puesto = "SELECT puesto FROM empleados WHERE id = ?";
+$stmt_puesto = $conn->prepare($sql_puesto);
+$stmt_puesto->bind_param('i', $id_empleado);
+$stmt_puesto->execute();
+$result_puesto = $stmt_puesto->get_result();
+
+if ($result_puesto->num_rows === 0) {
+    echo json_encode(['disponible' => false, 'mensaje' => 'Empleado no encontrado']);
     exit();
 }
 
-// Obtener datos del POST
-$inicio = $_POST['inicio'] ?? null;
-$fin = $_POST['fin'] ?? null;
+$empleado_actual = $result_puesto->fetch_assoc();
+$puesto_actual = $empleado_actual['puesto'];
 
-if (!$inicio || !$fin) {
-    echo json_encode(['disponible' => true]); // Datos incompletos, permitir
+// Verificar disponibilidad por puesto (usando JOIN con empleados)
+$sql = "SELECT e.nombre, e.puesto 
+        FROM solicitudes s 
+        JOIN empleados e ON s.id_empleado = e.id 
+        WHERE e.puesto = ? 
+        AND s.estado IN ('aprobada', 'pendiente')
+        AND ((s.fecha_inicio BETWEEN ? AND ?) 
+             OR (s.fecha_fin BETWEEN ? AND ?)
+             OR (? BETWEEN s.fecha_inicio AND s.fecha_fin)
+             OR (? BETWEEN s.fecha_inicio AND s.fecha_fin))";
+
+$stmt = $conn->prepare($sql);
+
+if (!$stmt) {
+    echo json_encode(['disponible' => false, 'mensaje' => 'Error en la consulta']);
     exit();
 }
 
-
-// En guardar_solicitud.php, modificar la consulta de verificación de solapamiento:
-$stmt = $conn->prepare("SELECT s.id, e.nombre 
-    FROM solicitudes s
-    JOIN empleados e ON s.id_empleado = e.id
-    WHERE (s.estado = 'aprobada' OR s.estado = 'pendiente')
-    AND (
-        (? BETWEEN s.fecha_inicio AND s.fecha_fin) OR 
-        (? BETWEEN s.fecha_inicio AND s.fecha_fin) OR 
-        (s.fecha_inicio BETWEEN ? AND ?) OR 
-        (s.fecha_fin BETWEEN ? AND ?)
-    )
-    LIMIT 1");
-$stmt->bind_param("ssssss", $inicio, $fin, $inicio, $fin, $inicio, $fin);
+$stmt->bind_param('sssssss', $puesto_actual, $fecha_inicio, $fecha_fin, $fecha_inicio, $fecha_fin, $fecha_inicio, $fecha_fin);
 $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
     $conflicto = $result->fetch_assoc();
-    echo json_encode(['disponible' => false, 'mensaje' => "Estas fechas ya están solicitadas por {$conflicto['nombre']}"]);
+    echo json_encode([
+        'disponible' => false, 
+        'mensaje' => "Estas fechas están ocupadas por {$conflicto['nombre']}"
+    ]);
 } else {
     echo json_encode(['disponible' => true]);
 }

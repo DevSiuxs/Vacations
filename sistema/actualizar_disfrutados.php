@@ -5,7 +5,6 @@ if (!isset($_SESSION['empleado_id']) || ($_SESSION['empleado_rol'] !== 'admin' &
     exit();
 }
 
-// Configuración de la base de datos
 require_once '../db_config.php'; 
 
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -16,8 +15,6 @@ if ($conn->connect_error) {
 
 $hoy = date('Y-m-d');
 
-// Primero, obtener todas las solicitudes aprobadas cuya fecha de inicio ya pasó
-// y que aún no han sido contabilizadas en días disfrutados
 $sql = "SELECT s.id_empleado, s.dias_solicitados, s.fecha_inicio
         FROM solicitudes s
         WHERE s.estado = 'aprobada' 
@@ -49,11 +46,4 @@ if ($result->num_rows > 0) {
 
 $conn->close();
 
-// Crear la tabla vacaciones_disfrutadas si no existe
-// CREATE TABLE vacaciones_disfrutadas (
-//     id INT AUTO_INCREMENT PRIMARY KEY,
-//     id_solicitud INT NOT NULL,
-//     fecha_procesamiento DATETIME NOT NULL,
-//     FOREIGN KEY (id_solicitud) REFERENCES solicitudes(id)
-// );
 ?>

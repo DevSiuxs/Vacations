@@ -26,7 +26,7 @@ CREATE TABLE solicitudes (
     dias_solicitados INT NOT NULL,
     estado ENUM('pendiente', 'aprobada', 'rechazada') DEFAULT 'pendiente',
     fecha_aprobacion DATETIME NULL,
-    FOREIGN KEY (id_empleado) REFERENCES empleados(id)  
+    FOREIGN KEY (id_empleado) REFERENCES empleados(id) ON DELETE CASCADE
 );
 
 CREATE TABLE rechazos_vacaciones (

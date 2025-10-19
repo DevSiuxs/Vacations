@@ -39,7 +39,7 @@ if ($conn->connect_error) {
 }
 
 body {
-  background: linear-gradient(135deg, #1a2a6c, #a92222, #fdbb2d);
+  background: #1e1e1e;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -47,12 +47,12 @@ body {
 }
 
 nav {
-  background-color: #f2f2f280;
+  background-color: #282828ff;
   padding: 15px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 1);
 }
 
 nav ul {

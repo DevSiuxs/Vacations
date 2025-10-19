@@ -208,38 +208,38 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
             </div>
             <?php
         }
-        
-       function mostrarSolicitud() {
+function mostrarSolicitud() {
     global $a_disfrutar, $conn;
     $id_empleado = $_SESSION['empleado_id'];
     
-    // Calcular fecha mínima (hoy + 15 días)
-    $fechaMinima = date('Y-m-d', strtotime('+15 days'));
+    // Calcular fecha mínima (hoy + 14 días)
+    // $fechaMinima = date('Y-m-d', strtotime('+14 days'));
     
-    // Obtener fechas bloqueadas (aprobadas y pendientes) para este empleado
-    $result = $conn->query("SELECT fecha_inicio, fecha_fin 
+    $resultBloqueadas = $conn->query("SELECT fecha_inicio, fecha_fin 
                            FROM solicitudes 
                            WHERE id_empleado = $id_empleado 
                            AND (estado = 'aprobada' OR estado = 'pendiente')");
     
     $fechasBloqueadas = [];
-    while ($row = $result->fetch_assoc()) {
+    while ($row = $resultBloqueadas->fetch_assoc()) {
         $fechasBloqueadas[] = [
             'start' => $row['fecha_inicio'],
             'end' => $row['fecha_fin']
         ];
     }
     
-    // Obtener TODAS las fechas ocupadas de TODOS los usuarios (aprobadas y pendientes)
-    $resultOcupadas = $conn->query("SELECT fecha_inicio, fecha_fin 
-                                   FROM solicitudes 
-                                   WHERE (estado = 'aprobada' OR estado = 'pendiente')");
+    // Obtener TODAS las fechas ocupadas de TODOS los usuarios (aprobadas y pendientes) CON SU PUESTO
+    $resultOcupadas = $conn->query("SELECT s.fecha_inicio, s.fecha_fin, e.puesto 
+                               FROM solicitudes s
+                               JOIN empleados e ON s.id_empleado = e.id
+                               WHERE (s.estado = 'aprobada' OR s.estado = 'pendiente')");
     
     $fechasOcupadas = [];
     while ($row = $resultOcupadas->fetch_assoc()) {
         $fechasOcupadas[] = [
             'start' => $row['fecha_inicio'],
-            'end' => $row['fecha_fin']
+            'end' => $row['fecha_fin'],
+            'puesto' => $row['puesto'] // ← Agregar puesto aquí
         ];
     }
     
@@ -253,11 +253,11 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
         <form id="solicitudForm">
             <div class="form-group">
                 <label for="inicio">SOLICITO INICIO DE VACACIONES</label>
-                <input type="date" id="inicio" onchange="calcularDias()" min="<?php echo $fechaMinima; ?>">
+                <input type="date" id="inicio" onchange="calcularDias()">
             </div>
             <div class="form-group">
                 <label for="fin">SOLICITO FIN DE VACACIONES</label>
-                <input type="date" id="fin" onchange="calcularDias()" min="<?php echo $fechaMinima; ?>">
+                <input type="date" id="fin" onchange="calcularDias()">
             </div>
             <div class="form-group">
                 <label for="dias">DIAS A PEDIR</label>
@@ -296,12 +296,52 @@ $a_disfrutar = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'] - $va
     </div>
             
             <script>
-             // Fechas bloqueadas (aprobadas y pendientes del usuario actual)
+   // Fechas bloqueadas (aprobadas y pendientes del usuario actual)
     const fechasBloqueadas = <?php echo $fechasBloqueadasJson; ?>;
     
     // Todas las fechas ocupadas de todos los usuarios
     const fechasOcupadas = <?php echo $fechasOcupadasJson; ?>;
+   
+    function validarFechasNoBloqueadas(inicio, fin) {
+    const inicioDate = new Date(inicio);
+    const finDate = new Date(fin);
     
+    // Primero validar contra las propias solicitudes del usuario
+    for (const bloqueo of fechasBloqueadas) {
+        const bloqueoInicio = new Date(bloqueo.start);
+        const bloqueoFin = new Date(bloqueo.end);
+        
+        if (
+            (inicioDate >= bloqueoInicio && inicioDate <= bloqueoFin) ||
+            (finDate >= bloqueoInicio && finDate <= bloqueoFin) ||
+            (inicioDate <= bloqueoInicio && finDate >= bloqueoFin)
+        ) {
+            return {valido: false, mensaje: 'Estas fechas se solapan con tus propias solicitudes'};
+        }
+    }
+    
+    // Luego verificar con el servidor para empleados del MISMO PUESTO
+    return fetch('verificar_disponibilidad.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `inicio=${inicio}&fin=${fin}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.disponible) {
+            return {valido: true};
+        } else {
+            return {valido: false, mensaje: data.mensaje || 'Estas fechas ya están ocupadas por otro empleado del mismo puesto'};
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        return {valido: true}; // En caso de error, permitir continuar
+    });
+}
+
     // Modal functions
     function mostrarCalendarioOcupados() {
         document.getElementById('modalCalendario').style.display = 'block';
@@ -401,13 +441,24 @@ function generarCalendario() {
             td.style.padding = '5px';
             td.style.textAlign = 'center';
             
-            // Verificar si la fecha está ocupada (MÉTODO SIMPLE)
-            const estaOcupada = fechasOcupadas.some(periodo => {
-                const inicioStr = periodo.start;
-                const finStr = periodo.end;
-                
-                return fechaStr >= inicioStr && fechaStr <= finStr;
-            });
+const estaOcupada = fechasOcupadas.some(periodo => {
+    const inicioStr = periodo.start;
+    const finStr = periodo.end;
+    const puestoOcupante = periodo.puesto;
+    
+    // Si quieres diferenciar colores por puesto:
+    if (fechaStr >= inicioStr && fechaStr <= finStr) {
+        // Puedes asignar diferentes colores según el puesto
+        if (puestoOcupante === 'operativo') {
+            td.style.backgroundColor = '#ff0000ff'; // Rojo claro para operativos
+        } else {
+            td.style.backgroundColor = '#0000ffff'; // Azul claro para administrativos
+        }
+        td.title = `Día ocupado por ${puestoOcupante}`;
+        return true;
+    }
+    return false;
+});
             
             if (estaOcupada) {
                 td.style.backgroundColor = '#ffcccc';
@@ -444,99 +495,58 @@ function generarCalendario() {
         tabla.appendChild(tbody);
         calendarioDiv.appendChild(tabla);
     }
+}        
+    async function calcularDias() {
+    const inicio = document.getElementById('inicio').value;
+    const fin = document.getElementById('fin').value;
+    const disponibles = parseInt(document.getElementById('dias-disponibles').textContent);
+    
+    if (inicio && fin) {
+        // Validación de 15 días mínimo
+        const hoy = new Date();
+        const fechaInicio = new Date(inicio);
+        const diffTime = fechaInicio - hoy;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays < 15) {
+            alert('La fecha de inicio debe ser al menos 15 días después de hoy');
+            document.getElementById('inicio').value = '';
+            document.getElementById('dias').value = '';
+            return;
+        }
+        
+        const fechaFin = new Date(fin);
+        
+        if (fechaFin < fechaInicio) {
+            alert("La fecha de fin debe ser posterior a la de inicio");
+            document.getElementById('dias').value = 0;
+            return;
+        }
+        
+        // IMPORTANTE: Agregar esta validación que falta
+        const validacion = await validarFechasNoBloqueadas(inicio, fin);
+        if (!validacion.valido) {
+            alert(validacion.mensaje);
+            document.getElementById('dias').value = '';
+            return;
+        }
+        
+        // Calcula la diferencia en milisegundos
+        const diferencia = fechaFin - fechaInicio;
+        
+        // Convierte a días (1000 ms * 60 s * 60 min * 24 h)
+        const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24)) + 1;
+        
+        document.getElementById('dias').value = dias;
+        
+        // Validación visual
+        if (dias > disponibles) {
+            document.getElementById('dias').style.backgroundColor = '#ffcccc';
+        } else {
+            document.getElementById('dias').style.backgroundColor = '';
+        }
+    }
 }
-            
-            function validarFechasNoBloqueadas(inicio, fin) {
-                const inicioDate = new Date(inicio);
-                const finDate = new Date(fin);
-                
-                for (const bloqueo of fechasBloqueadas) {
-                    const bloqueoInicio = new Date(bloqueo.start);
-                    const bloqueoFin = new Date(bloqueo.end);
-                    
-                    if (
-                        (inicioDate >= bloqueoInicio && inicioDate <= bloqueoFin) ||
-                        (finDate >= bloqueoInicio && finDate <= bloqueoFin) ||
-                        (inicioDate <= bloqueoInicio && finDate >= bloqueoFin)
-                    ) {
-                        return {valido: false, mensaje: 'Estas fechas se solapan con tus propias solicitudes'};
-                    }
-                }
-                
-                // Luego verificar con el servidor para todos los usuarios
-                return fetch('verificar_disponibilidad.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `inicio=${inicio}&fin=${fin}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.disponible) {
-                        return {valido: true};
-                    } else {
-                        return {valido: false, mensaje: data.mensaje || 'Estas fechas ya están ocupadas por otro usuario'};
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    return {valido: true}; // En caso de error, permitir continuar
-                });
-            }
-            
-            async function calcularDias() {
-                const inicio = document.getElementById('inicio').value;
-                const fin = document.getElementById('fin').value;
-                const disponibles = parseInt(document.getElementById('dias-disponibles').textContent);
-                
-                if (inicio && fin) {
-                    // Validación de 15 días mínimo
-                    const hoy = new Date();
-                    const fechaInicio = new Date(inicio);
-                    const diffTime = fechaInicio - hoy;
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    
-                    if (diffDays < 15) {
-                        alert('La fecha de inicio debe ser al menos 15 días después de hoy');
-                        document.getElementById('inicio').value = '';
-                        document.getElementById('dias').value = '';
-                        return;
-                    }
-                    
-                    const fechaFin = new Date(fin);
-                    
-                    // Validar que la fecha fin sea mayor que la inicio
-                    if (fechaFin < fechaInicio) {
-                        alert("La fecha de fin debe ser posterior a la de inicio");
-                        document.getElementById('dias').value = 0;
-                        return;
-                    }
-                    
-                    // Validar que no se solape con fechas bloqueadas
-                    const validacion = await validarFechasNoBloqueadas(inicio, fin);
-                    if (!validacion.valido) {
-                        alert(validacion.mensaje);
-                        document.getElementById('dias').value = '';
-                        return;
-                    }
-                    
-                    // Calcula la diferencia en milisegundos
-                    const diferencia = fechaFin - fechaInicio;
-                    
-                    // Convierte a días (1000 ms * 60 s * 60 min * 24 h)
-                    const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24)) + 1;
-                    
-                    document.getElementById('dias').value = dias;
-                    
-                    // Validación visual
-                    if (dias > disponibles) {
-                        document.getElementById('dias').style.backgroundColor = '#ffcccc';
-                    } else {
-                        document.getElementById('dias').style.backgroundColor = '';
-                    }
-                }
-            }
             </script>
             <?php
         }
@@ -609,7 +619,7 @@ function generarCalendario() {
     global $empleado, $vacaciones, $conn;
     $id_empleado = $_SESSION['empleado_id']; // Usar el ID de la sesión
     
-    // Calcular días teóricos disponibles (sin considerar disfrutados)
+    // Calcular días teóricos disponibles 
     $dias_teoricos = $vacaciones['dias_totales'] - $vacaciones['dias_asignados'];
     
     // Obtener días en espera (solicitudes pendientes)
@@ -785,66 +795,69 @@ function generarCalendario() {
         };
         
         function enviarSolicitud() {
-            const inicio = document.getElementById('inicio').value;
-            const fin = document.getElementById('fin').value;
-            const dias = parseInt(document.getElementById('dias').value);
-            const disponibles = parseInt(document.getElementById('dias-disponibles').textContent);
-            
-            if (!inicio || !fin || !dias || dias <= 0) {
-                alert("Por favor completa todos los campos correctamente");
-                return;
-            }
-            
-            if (dias > disponibles) {
-                alert(`No tienes suficientes días disponibles.\nDisponibles: ${disponibles}\nSolicitados: ${dias}`);
-                return;
-            }
-            
-            // Mostrar loading o deshabilitar botón para evitar múltiples clics
-            const submitBtn = document.querySelector('.submit-btn');
-            const originalText = submitBtn.textContent;
-            submitBtn.textContent = 'Enviando...';
-            submitBtn.disabled = true;
-            
-            fetch('guardar_solicitud.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `inicio=${inicio}&fin=${fin}&dias=${dias}`
-            })
-            // En el archivo index.php, dentro de la función enviarSolicitud():
-.then(response => {
-    submitBtn.textContent = originalText;
-    submitBtn.disabled = false;
+    const inicio = document.getElementById('inicio').value;
+    const fin = document.getElementById('fin').value;
+    const dias = parseInt(document.getElementById('dias').value);
+    const disponibles = parseInt(document.getElementById('dias-disponibles').textContent);
     
-    // Verificar si la respuesta es JSON
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
+    console.log('Enviando solicitud:', { inicio, fin, dias, disponibles });
+    
+    if (!inicio || !fin || !dias || dias <= 0) {
+        alert("Por favor completa todos los campos correctamente");
+        return;
+    }
+    
+    if (dias > disponibles) {
+        alert(`No tienes suficientes días disponibles.\nDisponibles: ${disponibles}\nSolicitados: ${dias}`);
+        return;
+    }
+    
+    // Mostrar loading o deshabilitar botón para evitar múltiples clics
+    const submitBtn = document.querySelector('.submit-btn');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Enviando...';
+    submitBtn.disabled = true;
+    
+    fetch('guardar_solicitud.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `inicio=${inicio}&fin=${fin}&dias=${dias}`
+    })
+    .then(response => {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+        
+        // Primero obtener el texto de la respuesta para debug
         return response.text().then(text => {
-            console.error('Respuesta no JSON:', text);
-            // Mostrar un mensaje de error más específico
-            alert('Error del servidor. Por favor, contacta al administrador.');
-            throw new Error('Error del servidor: ' + text);
+            console.log('Respuesta del servidor:', text);
+            
+            try {
+                // Intentar parsear como JSON
+                return JSON.parse(text);
+            } catch (e) {
+                console.error('Error parseando JSON:', e);
+                console.error('Respuesta recibida:', text);
+                throw new Error('El servidor respondió con HTML en lugar de JSON. Posible error PHP.');
+            }
         });
-    }
-    return response.json();
-})
-.then(data => {
-    if (data.error) {
-        alert("Error: " + data.error);
-    } else {
-        alert("Solicitud enviada correctamente");
-        window.location.href = "?vista=disponibilidad";
-    }
-})
-.catch(error => {
-    submitBtn.textContent = originalText;
-    submitBtn.disabled = false;
-    console.error('Error completo:', error);
-    alert("Error al guardar la solicitud. Por favor, verifica la consola para más detalles.");
-});
+    })
+    .then(data => {
+        if (data.error) {
+            alert("Error: " + data.error);
+        } else {
+            alert("Solicitud enviada correctamente");
+            window.location.href = "?vista=disponibilidad";
         }
+    })
+    .catch(error => {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+        console.error('Error completo:', error);
+        alert("Error del servidor: " + error.message + ". Revisa la consola para más detalles.");
+    });
+}
         
         // Función para aprobar solicitud
         function aprobarSolicitud(id) {
@@ -937,6 +950,5 @@ function generarCalendario() {
 </body>
 </html>
 <?php
-// Cerrar conexión
 $conn->close();
 ?>

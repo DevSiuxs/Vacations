@@ -66,7 +66,7 @@ $empleados = $conn->query("SELECT id, nombre, puesto FROM empleados ORDER BY nom
         }
 
         body {
-            background: linear-gradient(135deg, #1a2a6c, #a92222, #fdbb2d);
+            background: #1e1e1e;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -79,7 +79,7 @@ $empleados = $conn->query("SELECT id, nombre, puesto FROM empleados ORDER BY nom
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 1);
         }
 
         nav ul {

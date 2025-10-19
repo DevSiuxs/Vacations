@@ -6,7 +6,7 @@
 }
 
 body {
-  background: linear-gradient(135deg, #1a2a6c, #a92222, #fdbb2d);
+  background: #1E1E1E;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -14,12 +14,12 @@ body {
 }
 
 nav {
-  background-color: #f2f2f280;
+  background-color: #28282800;
   padding: 15px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgb(0, 0, 0);
 }
 
 nav ul {

@@ -13,7 +13,6 @@ if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
 }
 
-// Procesar eliminación de usuario
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['eliminar_usuario'])) {
     $usuario_id = intval($_POST['usuario_id']);
     
@@ -22,26 +21,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['eliminar_usuario'])) 
         $mensaje = "No puedes eliminarte a ti mismo.";
         $tipo_mensaje = "error";
     } else {
-        // Preparar y ejecutar consulta de eliminación
-        $stmt = $conn->prepare("DELETE FROM empleados WHERE id = ?");
-        $stmt->bind_param("i", $usuario_id);
+        // Iniciar transacción para asegurar la integridad de los datos
+        $conn->begin_transaction();
         
-        if ($stmt->execute()) {
-            if ($stmt->affected_rows > 0) {
+        try {
+            // 1. Eliminar registros en vacaciones_disfrutadas relacionados con las solicitudes
+            $stmt1 = $conn->prepare("
+                DELETE vd FROM vacaciones_disfrutadas vd 
+                INNER JOIN solicitudes s ON vd.id_solicitud = s.id 
+                WHERE s.id_empleado = ?
+            ");
+            $stmt1->bind_param("i", $usuario_id);
+            $stmt1->execute();
+            $stmt1->close();
+            
+            // 2. Eliminar registros en rechazos_vacaciones relacionados con las solicitudes
+            $stmt2 = $conn->prepare("
+                DELETE rv FROM rechazos_vacaciones rv 
+                INNER JOIN solicitudes s ON rv.id_solicitud = s.id 
+                WHERE s.id_empleado = ?
+            ");
+            $stmt2->bind_param("i", $usuario_id);
+            $stmt2->execute();
+            $stmt2->close();
+            
+            // 3. Eliminar solicitudes del usuario
+            $stmt3 = $conn->prepare("DELETE FROM solicitudes WHERE id_empleado = ?");
+            $stmt3->bind_param("i", $usuario_id);
+            $stmt3->execute();
+            $stmt3->close();
+            
+            // 4. Eliminar registro de vacaciones del usuario
+            $stmt4 = $conn->prepare("DELETE FROM vacaciones WHERE id_empleado = ?");
+            $stmt4->bind_param("i", $usuario_id);
+            $stmt4->execute();
+            $stmt4->close();
+            
+            // 5. Finalmente eliminar el usuario
+            $stmt5 = $conn->prepare("DELETE FROM empleados WHERE id = ?");
+            $stmt5->bind_param("i", $usuario_id);
+            $stmt5->execute();
+            
+            if ($stmt5->affected_rows > 0) {
+                $conn->commit();
                 $mensaje = "Usuario eliminado correctamente.";
                 $tipo_mensaje = "exito";
             } else {
+                $conn->rollback();
                 $mensaje = "No se encontró el usuario o ya fue eliminado.";
                 $tipo_mensaje = "error";
             }
-        } else {
-            $mensaje = "Error al eliminar el usuario: " . $conn->error;
+            $stmt5->close();
+            
+        } catch (Exception $e) {
+            $conn->rollback();
+            $mensaje = "Error al eliminar el usuario: " . $e->getMessage();
             $tipo_mensaje = "error";
         }
-        $stmt->close();
     }
 }
-
 // Obtener lista de usuarios
 $sql = "SELECT id, nombre, puesto, fecha_ingreso, rol FROM empleados ORDER BY nombre";
 $result = $conn->query($sql);
@@ -64,7 +102,7 @@ $result = $conn->query($sql);
         }
 
         body {
-            background: linear-gradient(135deg, #1a2a6c, #a92222, #fdbb2d);
+            background: #1e1e1e;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -72,12 +110,12 @@ $result = $conn->query($sql);
         }
 
         nav {
-            background-color: #f2f2f280;
+            background-color: #30303000;
             padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 1);
         }
 
         nav ul {
@@ -154,7 +192,7 @@ $result = $conn->query($sql);
 
         .search-container button {
             padding: 12px 20px;
-            background: linear-gradient(to right, #2193b0, #6dd5ed);
+            background: #6dd5ed;
             color: white;
             border: none;
             border-radius: 10px;
@@ -175,7 +213,7 @@ $result = $conn->query($sql);
         }
 
         .users-table th {
-            background: linear-gradient(to right, #1a2a6c, #2c3e50);
+            background: #1a2aca;;
             color: white;
         }
 
