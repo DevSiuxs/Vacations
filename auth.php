@@ -22,7 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['empleado_nombre'] = $empleado['nombre'];
                 $_SESSION['empleado_rol'] = $empleado['rol'];
                 
-                // Inicializar vacaciones si no existen
                 inicializarVacaciones($conn, $empleado['id']);
                 
                header("Location: sistema/index.php");
@@ -37,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } 
     elseif ($action === 'register') {
-        // Procesar registro
+        
         $nombre = trim($_POST['nombre']);
         $puesto = $_POST['puesto'];
         $fecha_ingreso = $_POST['fecha_ingreso'];
@@ -45,13 +44,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $password = $_POST['password'];
         $confirm_password = $_POST['confirm_password'];
         
-        // Validaciones
         if ($password !== $confirm_password) {
             header("Location: register.php?error=Las contraseñas no coinciden");
             exit();
         }
         
-        // Verificar si el usuario ya existe
         $stmt = $conn->prepare("SELECT id FROM empleados WHERE nombre = ?");
         $stmt->bind_param("s", $nombre);
         $stmt->execute();
