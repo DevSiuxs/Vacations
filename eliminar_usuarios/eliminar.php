@@ -102,15 +102,23 @@ $result = $conn->query($sql);
         }
 
         body {
-            background: #1e1e1e;
-            min-height: 100vh;
+            background: url(../Assets/imagenes/Uranus-Background.png);
+    background-repeat: no-repeat;
+    background-repeat: no-repeat;
+    /* 2. Asegurar que la imagen cubra todo el viewport */
+    background-size: cover;
+    /* 3. Centrar la imagen en el viewport */
+    background-position: center 0em;
+    /* 4. Opcional: Altura mínima del body para asegurar que cubra toda la pantalla */
+    min-height: 100vh;
+            
             display: flex;
             flex-direction: column;
             color: #333;
         }
 
         nav {
-            background-color: #30303000;
+            background-color: rgba(255, 255, 255, 0.12);
             padding: 15px 20px;
             display: flex;
             justify-content: space-between;
@@ -133,7 +141,7 @@ $result = $conn->query($sql);
         }
 
         .back-btn {
-            color: white;
+            color: #ffffffb6;
             text-decoration: none;
             font-size: 24px;
             cursor: pointer;
@@ -153,7 +161,7 @@ $result = $conn->query($sql);
         }
 
         .container {
-            background-color: rgba(255, 255, 255, 0.95);
+            background-color: rgba(255, 255, 255, 0.67);
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             width: 90%;

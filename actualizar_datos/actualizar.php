@@ -37,17 +37,41 @@ if ($conn->connect_error) {
   box-sizing: border-box;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
+   body {
+    background: url(../Assets/imagenes/Uranus-Background.png);
+    background-repeat: no-repeat;
+    background-size: cover; /* Cubre todo el área */
+    background-position: center center; /* Centra la imagen */
+    background-attachment: fixed; /* Fija la imagen para que no se alargue */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    color: #333;
 
-body {
-  background: #1e1e1e;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  color: #333;
+    /* Agregar para el overlay */
+    position: relative;
 }
 
+/* AGREGAR ESTO: Overlay oscuro/difuminado */
+body::before {
+    content: '';
+    position: fixed; /* Fijo para cubrir toda la pantalla */
+    top: 100;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4); /* Oscurece la imagen */
+    backdrop-filter: blur(4px); /* Difumina la imagen de fondo */
+    z-index: -1; /* Coloca detrás del contenido */
+}
+
+/* Asegúrate que el contenido esté sobre el overlay */
+main, nav, .container {
+    position: relative;
+    z-index: 1;
+}
 nav {
-  background-color: #282828ff;
+  background-color: #ffffff3b;
   padding: 15px 20px;
   display: flex;
   justify-content: space-between;
@@ -72,48 +96,48 @@ nav img {
             max-width: 1200px;
             margin: 20px auto;
             padding: 20px;
-            background: white;
+            background: #ffffff92;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        
+
         h1 {
             text-align: center;
             color: #0c21e2;
             margin-bottom: 20px;
         }
-        
+
         .alert {
             padding: 10px;
             margin-bottom: 15px;
             border-radius: 4px;
         }
-        
+
         .alert-success {
-            background-color: #d4edda;
+            background-color: #ffffff3a;
             color: #155724;
-            border: 1px solid #c3e6cb;
+            border: 1px solid #e9ece938;
         }
-        
+
         .alert-error {
             background-color: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
-        
+
         .filtro {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
             flex-wrap: wrap;
         }
-        
+
         .filtro input, .filtro select {
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
         }
-        
+
         .filtro button {
             padding: 8px 16px;
             background-color: #4CAF50;
@@ -122,35 +146,35 @@ nav img {
             border-radius: 4px;
             cursor: pointer;
         }
-        
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
         }
-        
+
         th, td {
             padding: 12px 8px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
-        
+
         th {
             background-color: #0c21e2;
             color: white;
         }
-        
+
         tr:hover {
             background-color: #f5f5f5;
         }
-        
+
         .editable input {
             width: 60px;
             padding: 5px;
             border: 1px solid #ccc;
             border-radius: 3px;
         }
-        
+
         .btn-editar, .btn-guardar, .btn-cancelar {
             padding: 6px 12px;
             border: none;
@@ -158,26 +182,26 @@ nav img {
             cursor: pointer;
             margin: 2px;
         }
-        
+
         .btn-editar {
             background-color: #2196F3;
             color: white;
         }
-        
+
         .btn-guardar {
             background-color: #4CAF50;
             color: white;
         }
-        
+
         .btn-cancelar {
             background-color: #f44336;
             color: white;
         }
-        
+
         .nav-links {
             margin-top: 20px;
         }
-        
+
         .nav-links a {
             display: inline-block;
             padding: 10px 15px;
@@ -186,7 +210,7 @@ nav img {
             text-decoration: none;
             border-radius: 4px;
         }
-        
+
         @media (max-width: 768px) {
             .filtro {
                 flex-direction: column;
@@ -208,10 +232,10 @@ nav img {
             </li>
         </ul>
     </nav>
-    
+
     <div class="container">
         <h1>ACTUALIZAR DATOS DE VACACIONES</h1>
-        
+
         <?php
         if (isset($_GET['success'])) {
             echo '<div class="alert alert-success">' . htmlspecialchars($_GET['success']) . '</div>';
@@ -220,7 +244,7 @@ nav img {
             echo '<div class="alert alert-error">' . htmlspecialchars($_GET['error']) . '</div>';
         }
         ?>
-        
+
         <div class="filtro">
             <input type="text" id="buscarNombre" placeholder="Buscar por nombre">
             <select id="filtroPuesto">
@@ -232,9 +256,9 @@ nav img {
              <div class="nav-links">
             <a href="agregar_solicitud/agregar_solicitud.php">Historial Especiales <b> (Dias Pasados)</b></a>
         </div>
-            
+
         </div>
-        
+
         <div style="overflow-x: auto;">
             <table id="tablaVacaciones">
                 <thead>
@@ -253,20 +277,20 @@ nav img {
                     // Conexión a la base de datos
                     require_once '../db_config.php';
                     $conn = new mysqli($servername, $username, $password, $dbname);
-                    
+
                     if ($conn->connect_error) {
                         die("Conexión fallida: " . $conn->connect_error);
                     }
-                    
+
                     // Consulta para obtener los datos
-                    $sql = "SELECT e.id, e.nombre, e.puesto, v.dias_totales, v.dias_asignados, v.dias_disfrutados, 
+                    $sql = "SELECT e.id, e.nombre, e.puesto, v.dias_totales, v.dias_asignados, v.dias_disfrutados,
                             (v.dias_totales - v.dias_asignados - v.dias_disfrutados) as a_disfrutar
                             FROM empleados e
                             JOIN vacaciones v ON e.id = v.id_empleado
                             ORDER BY e.nombre";
-                    
+
                     $result = $conn->query($sql);
-                    
+
                     if ($result->num_rows > 0) {
                         while($row = $result->fetch_assoc()) {
                             echo "<tr data-id='{$row['id']}'>
@@ -286,86 +310,86 @@ nav img {
                     } else {
                         echo "<tr><td colspan='7'>No se encontraron registros</td></tr>";
                     }
-                    
+
                     $conn->close();
                     ?>
                 </tbody>
             </table>
         </div>
-        
+
         <div class="nav-links">
             <a href="../sistema/index.php">Volver al Inicio</a>
         </div>
     </div>
-    
+
     <script>
         function filtrarEmpleados() {
             const nombre = document.getElementById('buscarNombre').value.toLowerCase();
             const puesto = document.getElementById('filtroPuesto').value;
             const filas = document.querySelectorAll('#tablaVacaciones tbody tr');
-            
+
             filas.forEach(fila => {
                 const nombreEmpleado = fila.cells[0].textContent.toLowerCase();
                 const puestoEmpleado = fila.cells[1].textContent;
-                
+
                 const coincideNombre = nombre === '' || nombreEmpleado.includes(nombre);
                 const coincidePuesto = puesto === '' || puestoEmpleado === puesto;
-                
+
                 fila.style.display = (coincideNombre && coincidePuesto) ? '' : 'none';
             });
         }
-        
+
         function habilitarEdicion(boton) {
             const fila = boton.parentNode.parentNode;
             const celdasEditables = fila.querySelectorAll('.editable');
             const btnGuardar = fila.querySelector('.btn-guardar');
             const btnCancelar = fila.querySelector('.btn-cancelar');
-            
+
             // Guardar valores originales
             celdasEditables.forEach(celda => {
                 const valorOriginal = celda.textContent;
                 celda.setAttribute('data-original', valorOriginal);
                 celda.innerHTML = `<input type="number" value="${valorOriginal}" min="0">`;
             });
-            
+
             // Mostrar/ocultar botones
             boton.style.display = 'none';
             btnGuardar.style.display = 'inline-block';
             btnCancelar.style.display = 'inline-block';
         }
-        
+
         function cancelarEdicion(boton) {
             const fila = boton.parentNode.parentNode;
             const celdasEditables = fila.querySelectorAll('.editable');
             const btnEditar = fila.querySelector('.btn-editar');
             const btnGuardar = fila.querySelector('.btn-guardar');
             const btnCancelar = fila.querySelector('.btn-cancelar');
-            
+
             // Restaurar valores originales
             celdasEditables.forEach(celda => {
                 const valorOriginal = celda.getAttribute('data-original');
                 celda.textContent = valorOriginal;
             });
-            
+
             // Mostrar/ocultar botones
             btnEditar.style.display = 'inline-block';
             btnGuardar.style.display = 'none';
             btnCancelar.style.display = 'none';
         }
-        
+
         function confirmarGuardar(id) {
             if (confirm('¿Estás seguro de que deseas guardar los cambios?')) {
                 guardarCambios(id);
             }
         }
-        
+
         function guardarCambios(id) {
             const fila = document.querySelector(`tr[data-id="${id}"]`);
             const celdasEditables = fila.querySelectorAll('.editable');
             const btnEditar = fila.querySelector('.btn-editar');
             const btnGuardar = fila.querySelector('.btn-guardar');
             const btnCancelar = fila.querySelector('.btn-cancelar');
-            
+
             // Recopilar datos
             const datos = { id: id };
             celdasEditables.forEach(celda => {
@@ -373,18 +397,18 @@ nav img {
                 const valor = celda.querySelector('input').value;
                 datos[campo] = valor;
             });
-            
+
             // Validar que los días a disfrutar no sean negativos
             const diasTotales = parseInt(datos.dias_totales);
             const diasAsignados = parseInt(datos.dias_asignados);
             const diasDisfrutados = parseInt(datos.dias_disfrutados);
             const aDisfrutar = diasTotales - diasAsignados - diasDisfrutados;
-            
+
             if (aDisfrutar < 0) {
                 alert('Error: Los días a disfrutar no pueden ser negativos. Revise los valores.');
                 return;
             }
-            
+
             // Enviar datos al servidor
             fetch('actualizar_vacaciones.php', {
                 method: 'POST',
@@ -402,15 +426,15 @@ nav img {
                         const nuevoValor = datos[campo];
                         celda.textContent = nuevoValor;
                     });
-                    
+
                     // Recalcular "A Disfrutar"
                     fila.cells[5].textContent = aDisfrutar;
-                    
+
                     // Mostrar/ocultar botones
                     btnEditar.style.display = 'inline-block';
                     btnGuardar.style.display = 'none';
                     btnCancelar.style.display = 'none';
-                    
+
                     alert('Datos actualizados correctamente');
                 } else {
                     alert('Error: ' + data.error);
@@ -423,7 +447,7 @@ nav img {
                 cancelarEdicion(btnCancelar);
             });
         }
-        
+
         document.getElementById('buscarNombre').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 filtrarEmpleados();

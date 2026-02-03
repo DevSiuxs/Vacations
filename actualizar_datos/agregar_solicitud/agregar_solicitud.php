@@ -22,19 +22,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fecha_inicio = $conn->real_escape_string($_POST['fecha_inicio']);
     $fecha_fin = $conn->real_escape_string($_POST['fecha_fin']);
     $dias_solicitados = intval($_POST['dias_solicitados']);
-    
+
     // Validar fechas (solo verificar que inicio sea antes que fin)
     if ($fecha_inicio > $fecha_fin) {
         $mensaje = "La fecha de inicio debe ser anterior a la fecha de fin.";
         $tipo_mensaje = "error";
     } else {
         // Insertar la solicitud con estado aprobado
-        $sql = "INSERT INTO solicitudes (id_empleado, fecha_inicio, fecha_fin, dias_solicitados, estado, fecha_aprobacion) 
+        $sql = "INSERT INTO solicitudes (id_empleado, fecha_inicio, fecha_fin, dias_solicitados, estado, fecha_aprobacion)
                 VALUES (?, ?, ?, ?, 'aprobada', NOW())";
-        
+
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("issi", $id_empleado, $fecha_inicio, $fecha_fin, $dias_solicitados);
-        
+
         if ($stmt->execute()) {
             $mensaje = "Solicitud aprobada y registrada correctamente.";
             $tipo_mensaje = "exito";
@@ -65,13 +65,39 @@ $empleados = $conn->query("SELECT id, nombre, puesto FROM empleados ORDER BY nom
             font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        body {
-            background: #1e1e1e;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            color: #333;
-        }
+           body {
+    background: url(../../Assets/imagenes/Uranus-Background.png);
+    background-repeat: no-repeat;
+    background-size: cover; /* Cubre todo el área */
+    background-position: center center; /* Centra la imagen */
+    background-attachment: fixed; /* Fija la imagen para que no se alargue */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    color: #333;
+
+    /* Agregar para el overlay */
+    position: relative;
+}
+
+/* AGREGAR ESTO: Overlay oscuro/difuminado */
+body::before {
+    content: '';
+    position: fixed; /* Fijo para cubrir toda la pantalla */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4); /* Oscurece la imagen */
+    backdrop-filter: blur(4px); /* Difumina la imagen de fondo */
+    z-index: -1; /* Coloca detrás del contenido */
+}
+
+/* Asegúrate que el contenido esté sobre el overlay */
+main, nav, .container {
+    position: relative;
+    z-index: 1;
+}
 
         nav {
             background-color: #f2f2f280;
@@ -140,7 +166,7 @@ $empleados = $conn->query("SELECT id, nombre, puesto FROM empleados ORDER BY nom
             color: #495057;
         }
 
-        .form-group select, 
+        .form-group select,
         .form-group input {
             width: 100%;
             padding: 12px;
@@ -150,7 +176,7 @@ $empleados = $conn->query("SELECT id, nombre, puesto FROM empleados ORDER BY nom
             transition: border-color 0.3s;
         }
 
-        .form-group select:focus, 
+        .form-group select:focus,
         .form-group input:focus {
             border-color: #2193b0;
             outline: none;
@@ -233,27 +259,27 @@ $empleados = $conn->query("SELECT id, nombre, puesto FROM empleados ORDER BY nom
                 padding: 20px;
                 width: 95%;
             }
-            
+
             h1, h2 {
                 font-size: 1.4rem;
             }
-            
-            .form-group select, 
+
+            .form-group select,
             .form-group input {
                 padding: 14px;
                 font-size: 16px;
             }
-            
+
             .btn-submit {
                 padding: 16px;
                 font-size: 16px;
             }
-            
+
             .nav-links {
                 flex-direction: column;
                 gap: 10px;
             }
-            
+
             .nav-links a {
                 width: 100%;
                 text-align: center;
@@ -266,15 +292,15 @@ $empleados = $conn->query("SELECT id, nombre, puesto FROM empleados ORDER BY nom
                 align-items: flex-start;
                 gap: 10px;
             }
-            
+
             nav li {
                 margin-bottom: 8px;
             }
-            
+
             .container {
                 padding: 15px;
             }
-            
+
             h1, h2 {
                 font-size: 1.3rem;
             }
@@ -295,21 +321,21 @@ $empleados = $conn->query("SELECT id, nombre, puesto FROM empleados ORDER BY nom
             </li>
         </ul>
     </nav>
-    
+
     <main>
         <div class="container">
             <h1>Agregar Solicitud Aprobada</h1>
-            
+
             <div class="info-box">
                 <i class="fas fa-info-circle"></i> Todas las solicitudes agregadas aquí se registrarán automáticamente como APROBADAS.
             </div>
-            
+
             <?php if ($mensaje): ?>
                 <div class="message <?php echo $tipo_mensaje; ?>">
                     <?php echo $mensaje; ?>
                 </div>
             <?php endif; ?>
-            
+
             <form method="POST" action="">
                 <div class="form-group">
                     <label for="id_empleado">Empleado:</label>
@@ -322,28 +348,28 @@ $empleados = $conn->query("SELECT id, nombre, puesto FROM empleados ORDER BY nom
                         <?php endwhile; ?>
                     </select>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="fecha_inicio">Fecha de Inicio:</label>
                     <input type="date" id="fecha_inicio" name="fecha_inicio" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="fecha_fin">Fecha de Fin:</label>
                     <input type="date" id="fecha_fin" name="fecha_fin" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="dias_solicitados">Días Solicitados:</label>
-                    <input type="number" id="dias_solicitados" name="dias_solicitados" 
+                    <input type="number" id="dias_solicitados" name="dias_solicitados"
                            min="1" required placeholder="Número de días">
                 </div>
-                
+
                 <button type="submit" class="btn-submit">
                     <i class="fas fa-check-circle"></i> Registrar Solicitud Aprobada
                 </button>
             </form>
-            
+
             <div class="nav-links">
                 <a href="../../sistema/index.php"><i class="fas fa-home"></i> Volver al Inicio</a>
                 <a href="../../historial/historial.php"><i class="fas fa-history"></i> Ver Historial</a>
@@ -355,11 +381,11 @@ $empleados = $conn->query("SELECT id, nombre, puesto FROM empleados ORDER BY nom
         // Calcular días automáticamente al cambiar fechas
         document.getElementById('fecha_inicio').addEventListener('change', calcularDias);
         document.getElementById('fecha_fin').addEventListener('change', calcularDias);
-        
+
         function calcularDias() {
             const inicio = new Date(document.getElementById('fecha_inicio').value);
             const fin = new Date(document.getElementById('fecha_fin').value);
-            
+
             if (inicio && fin && inicio <= fin) {
                 const diffTime = fin - inicio;
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
@@ -370,17 +396,17 @@ $empleados = $conn->query("SELECT id, nombre, puesto FROM empleados ORDER BY nom
                 alert('La fecha de fin debe ser posterior a la fecha de inicio');
             }
         }
-        
+
         // Validar que la fecha fin sea mayor que la inicio
         document.querySelector('form').addEventListener('submit', function(e) {
             const inicio = new Date(document.getElementById('fecha_inicio').value);
             const fin = new Date(document.getElementById('fecha_fin').value);
-            
+
             if (inicio > fin) {
                 e.preventDefault();
                 alert('Error: La fecha de inicio debe ser anterior a la fecha de fin');
             }
-            
+
             // Validar que se hayan ingresado días
             const dias = document.getElementById('dias_solicitados').value;
             if (!dias || dias < 1) {

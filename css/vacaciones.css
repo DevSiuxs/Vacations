@@ -6,22 +6,45 @@
 }
 
 body {
-  background: #1E1E1E;
+  background: url(../Assets/imagenes/Uranus-Background.png);
+  background-repeat: no-repeat;
+  background-size: cover; /* Cubre todo el área */
+  background-position: center center; /* Centra la imagen */
+  background-attachment: fixed; /* Fija la imagen para que no se alargue con el scroll */
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   color: #333;
+ position: relative;
+
+}
+
+body::before {
+  content: '';
+  position: fixed; /* Fijo para cubrir toda la pantalla */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4); /* Oscurece la imagen - ajusta el 0.4 para más/menos oscuro */
+  backdrop-filter: blur(4px); /* Difumina la imagen de fondo - ajusta el valor para más/menos blur */
+  z-index: -1; /* Coloca detrás del contenido */
 }
 
 nav {
-  background-color: #28282800;
+  background-color: #ffffff29;
   padding: 15px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 4px 12px rgb(0, 0, 0);
+
 }
 
+main, nav, .container {
+  position: relative;
+  z-index: 1;
+}
 nav ul {
   display: flex;
   list-style: none;
@@ -57,7 +80,7 @@ main {
 }
 
 .container {
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: #f0f0f04e;
   border-radius: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   width: 90%;
@@ -66,6 +89,9 @@ main {
   animation: fadeIn 0.8s ease-out;
 }
 
+.container h1{
+  color: #000000d8;
+}
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -97,7 +123,7 @@ h2 {
 }
 
 .info-item {
-  background: linear-gradient(to right, #f8f9fa, #e9ecef);
+  background: linear-gradient(to right, #f8f9fa20, #ffffffc0);
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -114,7 +140,7 @@ h2 {
   display: block;
   font-weight: 600;
   margin-bottom: 8px;
-  color: #495057;
+  color: #ffffff;
   font-size: 16px;
 }
 
@@ -307,22 +333,42 @@ input[type="number"]:focus {
 }
 
 .footer a {
-  color: #2193b0;
+  color: #ffffff;
   text-decoration: none;
   font-weight: 600;
   transition: color 0.3s;
 }
 
 .footer a:hover {
-  color: #0d6efd;
-  text-decoration: underline;
+  color: #ff0026;
+  text-decoration: none;
+}
+.solicitudes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 columnas iguales */
+  gap: 40px;                             /* Espacio entre tarjetas */
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Reducimos un poco el padding de las tarjetas para que no se vean gigantes */
+.employee-periods {
+  margin-bottom: 0 !important; /* El grid ya maneja el espacio con 'gap' */
+  padding: 15px;
+}
+
+/* Responsive: 1 sola columna en celulares */
+@media (max-width: 768px) {
+  .solicitudes-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .employee-periods {
-  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  background: linear-gradient(135deg, #f8f9fa01, #e9ecef3a);
   border-radius: 12px;
   padding: 20px;
-  margin-bottom: 25px;
+  margin: auto;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -336,10 +382,8 @@ input[type="number"]:focus {
   border-bottom: 2px solid #dee2e6;
 }
 
+
 .actions {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
   margin-top: 20px;
 }
 

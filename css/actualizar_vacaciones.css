@@ -6,7 +6,15 @@
 }
 
 body {
-    background: #1e1e1e;
+    background: url(../Assets/imagenes/Uranus-Background.png);
+    background-repeat: no-repeat;
+    background-repeat: no-repeat;
+    /* 2. Asegurar que la imagen cubra todo el viewport */
+    background-size: cover;
+    /* 3. Centrar la imagen en el viewport */
+    background-position: center 0em;
+    /* 4. Opcional: Altura mínima del body para asegurar que cubra toda la pantalla */
+    min-height: 100vh;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -14,7 +22,7 @@ body {
 }
 
 nav {
-    background-color:#30303000;
+    background-color:#ffffff3b;
     padding: 15px 20px;
     display: flex;
     justify-content: space-between;
@@ -42,7 +50,7 @@ nav img {
     max-width: 1200px;
     margin: 20px auto;
     padding: 20px;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: rgba(255, 255, 255, 0.287);
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
     width: 95%;
@@ -65,7 +73,7 @@ h1, h2 {
 
 .filtro input, .filtro select {
     padding: 12px;
-    border: 1px solid #ccc;
+    border: 1px solid #ffffff33;
     border-radius: 5px;
     width: 250px;
     font-size: 16px;
@@ -90,7 +98,7 @@ h1, h2 {
     margin-bottom: 20px;
     border: 1px solid #ddd;
     border-radius: 8px;
-    background: white;
+    background: rgba(255, 255, 255, 0.254);
 }
 
 table {
@@ -102,7 +110,7 @@ table {
 th, td {
     padding: 12px 15px;
     text-align: left;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #ffffff2d;
 }
 
 th {
@@ -127,7 +135,7 @@ tr:hover {
 .btn-editar {
     padding: 8px 12px;
     background-color: #45a049;
-    color: white;
+    color: rgba(245, 233, 233, 0.235);
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -138,7 +146,7 @@ tr:hover {
 .btn-guardar {
     padding: 8px 12px;
     background-color: #1a2a6c;
-    color: white;
+    color: rgba(255, 255, 255, 0.216);
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -149,7 +157,7 @@ tr:hover {
 .btn-cancelar {
     padding: 8px 12px;
     background-color: #a92222;
-    color: white;
+    color: rgba(255, 255, 255, 0.229);
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -160,7 +168,7 @@ tr:hover {
 input[type="number"] {
     width: 70px;
     padding: 8px;
-    border: 1px solid #ccc;
+    border: 1px solid #ffffff36;
     border-radius: 4px;
     font-size: 14px;
     text-align: center;
@@ -193,7 +201,7 @@ input[type="number"] {
 .nav-links a {
     padding: 12px 20px;
     background-color: #1a2a6c;
-    color: white;
+    color: rgba(255, 255, 255, 0.23);
     text-decoration: none;
     border-radius: 5px;
     font-weight: 600;
